@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:background="@drawable/bg_card_dark"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <!-- Row 1: Title + difficulty badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvWorkoutName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Push Day - Klatka &amp; Triceps"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tvDifficultyBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Średni"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/accent_yellow"
+            android:background="@drawable/bg_badge_medium" />
+
+    </LinearLayout>
+
+    <!-- Row 2: Last performed -->
+    <TextView
+        android:id="@+id/tvLastPerformed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Ostatnio: 2 dni temu"
+        android:textSize="12sp"
+        android:textColor="@color/text_secondary" />
+
+    <!-- Row 3: Exercise count + duration -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_dumbbell"
+            android:contentDescription="ćwiczenia" />
+
+        <TextView
+            android:id="@+id/tvExerciseCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="8 ćwiczeń"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="20dp"
+            android:src="@drawable/ic_clock"
+            android:contentDescription="czas" />
+
+        <TextView
+            android:id="@+id/tvDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="60-75 min"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary" />
+
+    </LinearLayout>
+
+    <!-- Row 4: Start workout button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStartWorkout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="14dp"
+        android:text="Rozpocznij trening"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/accent_yellow"
+        app:cornerRadius="24dp"
+        app:icon="@drawable/ic_trending_up"
+        app:iconGravity="textStart"
+        app:iconTint="@color/black" />
+
+</LinearLayout>

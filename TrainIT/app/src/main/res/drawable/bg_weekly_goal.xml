@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark gradient background for weekly goal card -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#FF2A2A2A"
+        android:endColor="#FF1E1E1E"
+        android:angle="135" />
+    <corners android:radius="20dp" />
+</shape>
