@@ -86,6 +86,15 @@
 
         </LinearLayout>
 
+        <ProgressBar
+            android:id="@+id/progressLoading"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
         <!-- ============================================= -->
         <!-- ===== LOGIN FORM (visible by default) ======= -->
         <!-- ============================================= -->
