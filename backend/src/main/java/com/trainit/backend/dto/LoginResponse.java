@@ -5,16 +5,15 @@ import com.trainit.backend.entity.User;
 /**
  * Odpowiedź REST po pomyślnym zalogowaniu.
  *
- * <p>Zawiera dane profilu użytkownika (bez hasła) oraz token sesji. Obecnie token jest
- * losowym UUID generowanym w {@link com.trainit.backend.service.AuthService#login(LoginRequest)}
- * (placeholder zamiast JWT).
+ * <p>Zawiera dane profilu użytkownika (bez hasła) oraz token JWT generowany w
+ * {@link com.trainit.backend.service.AuthService#login(LoginRequest)}.
  *
  * @param id identyfikator użytkownika
  * @param email email konta
  * @param firstName imię
  * @param lastName nazwisko
  * @param role nazwa roli; może być {@code null}, jeśli brak powiązania w encji
- * @param token token sesji przekazywany do klienta (obecnie UUID)
+ * @param token token sesji JWT przekazywany do klienta
  * @see User
  * @see com.trainit.backend.service.AuthService#login(LoginRequest)
  */
@@ -24,7 +23,7 @@ public record LoginResponse(Integer id, String email, String firstName, String l
 	 * Buduje odpowiedź logowania z encji użytkownika i wygenerowanego tokena.
 	 *
 	 * @param user encja {@link User} po pomyślnym uwierzytelnieniu
-	 * @param token wartość tokena (np. UUID); nie jest to jeszcze podpisany JWT
+	 * @param token wartość podpisanego tokena JWT
 	 * @return rekord {@link LoginResponse} do zwrócenia z kontrolera
 	 */
 	public static LoginResponse fromEntity(User user, String token) {

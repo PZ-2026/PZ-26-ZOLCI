@@ -2,6 +2,7 @@ package com.trainit.backend.service;
 
 import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
+import com.trainit.backend.dto.ForgotPasswordRequest;
 import com.trainit.backend.dto.RegisterRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.entity.Role;
@@ -10,6 +11,7 @@ import com.trainit.backend.exception.EmailAlreadyExistsException;
 import com.trainit.backend.exception.InvalidCredentialsException;
 import com.trainit.backend.repository.RoleRepository;
 import com.trainit.backend.repository.UserRepository;
+import com.trainit.backend.security.JwtService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -59,6 +61,10 @@ class AuthServiceTest {
 	@InjectMocks
 	private AuthService authService;
 
+	/** Serwis JWT mockowany dla stabilnych wyników testów logowania. */
+	@Mock
+	private JwtService jwtService;
+
 	/**
 	 * Tworzy aktywnego użytkownika z rolą {@code USER} do testów logowania.
 	 *
@@ -91,6 +97,13 @@ class AuthServiceTest {
 		req.setFirstName("Jan");
 		req.setLastName("Kowalski");
 		return req;
+	}
+
+	private static ForgotPasswordRequest forgotPasswordRequest(String email, String password) {
+		ForgotPasswordRequest request = new ForgotPasswordRequest();
+		request.setEmail(email);
+		request.setNewPassword(password);
+		return request;
 	}
 
 	@Nested
@@ -259,6 +272,7 @@ class AuthServiceTest {
 			user.setId(11);
 			when(userRepository.findByEmail("jan@example.com")).thenReturn(Optional.of(user));
 			when(passwordEncoder.matches("Haslo123!", "hashed")).thenReturn(true);
+			when(jwtService.generateToken(any(), anyString(), anyString())).thenReturn("token-1");
 
 			LoginResponse response = authService.login(loginRequest("jan@example.com", "Haslo123!"));
 
@@ -320,6 +334,7 @@ class AuthServiceTest {
 			User user = buildActiveUser("jan@example.com", "hashed");
 			when(userRepository.findByEmail("jan@example.com")).thenReturn(Optional.of(user));
 			when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+			when(jwtService.generateToken(any(), anyString(), anyString())).thenReturn("token-1");
 
 			authService.login(loginRequest("  JAN@EXAMPLE.COM  ", "p"));
 
@@ -327,11 +342,14 @@ class AuthServiceTest {
 		}
 
 		@Test
-		@DisplayName("każde wywołanie generuje nowy token (UUID stub)")
-		void login_generatesUniqueTokensPerCall() {
+		@DisplayName("zwraca token wygenerowany przez serwis JWT")
+		void login_returnsTokenFromJwtService() {
 			User user = buildActiveUser("jan@example.com", "hashed");
 			when(userRepository.findByEmail("jan@example.com")).thenReturn(Optional.of(user));
 			when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+			when(jwtService.generateToken(any(), anyString(), anyString()))
+					.thenReturn("token-1")
+					.thenReturn("token-2");
 
 			LoginResponse first = authService.login(loginRequest("jan@example.com", "p"));
 			LoginResponse second = authService.login(loginRequest("jan@example.com", "p"));
@@ -346,11 +364,35 @@ class AuthServiceTest {
 			user.setRole(null);
 			when(userRepository.findByEmail("jan@example.com")).thenReturn(Optional.of(user));
 			when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+			when(jwtService.generateToken(any(), anyString(), anyString())).thenReturn("token-1");
 
 			LoginResponse response = authService.login(loginRequest("jan@example.com", "p"));
 
 			assertThat(response.role()).isNull();
 		}
+	}
+
+	@Test
+	@DisplayName("forgotPassword zmienia hash hasła gdy konto istnieje")
+	void forgotPassword_updatesPasswordHash() {
+		User user = buildActiveUser("jan@example.com", "old_hash");
+		when(userRepository.findByEmail("jan@example.com")).thenReturn(Optional.of(user));
+		when(passwordEncoder.encode("NoweHaslo123!")).thenReturn("new_hash");
+
+		authService.forgotPassword(forgotPasswordRequest("jan@example.com", "NoweHaslo123!"));
+
+		assertThat(user.getPasswordHash()).isEqualTo("new_hash");
+		verify(userRepository).save(user);
+	}
+
+	@Test
+	@DisplayName("forgotPassword nie rzuca błędu i nie zapisuje gdy email nie istnieje")
+	void forgotPassword_missingEmail_noop() {
+		when(userRepository.findByEmail("brak@example.com")).thenReturn(Optional.empty());
+
+		authService.forgotPassword(forgotPasswordRequest("brak@example.com", "NoweHaslo123!"));
+
+		verify(userRepository, never()).save(any());
 	}
 
 	/**

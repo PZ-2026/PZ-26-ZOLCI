@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pl.edu.ur.km131467.trainit.BuildConfig
 import pl.edu.ur.km131467.trainit.data.remote.api.AuthApi
+import pl.edu.ur.km131467.trainit.data.remote.api.FeatureApi
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
@@ -43,4 +44,5 @@ object NetworkModule {
     }
 
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
+    val featureApi: FeatureApi by lazy { retrofit.create(FeatureApi::class.java) }
 }

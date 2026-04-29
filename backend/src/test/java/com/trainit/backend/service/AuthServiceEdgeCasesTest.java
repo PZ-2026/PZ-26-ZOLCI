@@ -10,6 +10,7 @@ import com.trainit.backend.exception.EmailAlreadyExistsException;
 import com.trainit.backend.exception.InvalidCredentialsException;
 import com.trainit.backend.repository.RoleRepository;
 import com.trainit.backend.repository.UserRepository;
+import com.trainit.backend.security.JwtService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,6 +51,9 @@ class AuthServiceEdgeCasesTest {
 
 	@Mock
 	private BCryptPasswordEncoder passwordEncoder;
+
+	@Mock
+	private JwtService jwtService;
 
 	@InjectMocks
 	private AuthService authService;
@@ -139,6 +143,7 @@ class AuthServiceEdgeCasesTest {
 	void login_normalizesEmailVariations(String inputEmail, String expectedSearchEmail) {
 		when(userRepository.findByEmail(expectedSearchEmail)).thenReturn(Optional.of(user("jan@example.com")));
 		when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+		when(jwtService.generateToken(any(), anyString(), anyString())).thenReturn("token-1");
 
 		authService.login(logReq(inputEmail, "p"));
 
@@ -202,6 +207,7 @@ class AuthServiceEdgeCasesTest {
 			case "VALID" -> {
 				when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user(email)));
 				when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+				when(jwtService.generateToken(any(), anyString(), anyString())).thenReturn("token-1");
 				LoginResponse r = authService.login(logReq(email, password));
 				assertThat(r.token()).isNotBlank();
 			}

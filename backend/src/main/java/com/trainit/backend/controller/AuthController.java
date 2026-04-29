@@ -2,6 +2,7 @@ package com.trainit.backend.controller;
 
 import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
+import com.trainit.backend.dto.ForgotPasswordRequest;
 import com.trainit.backend.dto.RegisterRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.service.AuthService;
@@ -23,7 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>Endpointy:
  * <ul>
  *     <li>{@code POST /api/auth/register} — rejestracja nowego konta, odpowiedź {@code 201 Created}</li>
- *     <li>{@code POST /api/auth/login} — logowanie, odpowiedź {@code 200 OK} z tokenem (obecnie stub UUID)</li>
+ *     <li>{@code POST /api/auth/login} — logowanie, odpowiedź {@code 200 OK} z tokenem JWT</li>
+ *     <li>{@code POST /api/auth/forgot-password} — reset hasła na podstawie emaila</li>
  * </ul>
  *
  * @see AuthService
@@ -72,5 +74,17 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 		return ResponseEntity.ok(authService.login(request));
+	}
+
+	/**
+	 * Resetuje hasło użytkownika dla podanego emaila.
+	 *
+	 * @param request email i nowe hasło
+	 * @return odpowiedź 200 po obsłudze żądania
+	 */
+	@PostMapping("/forgot-password")
+	public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+		authService.forgotPassword(request);
+		return ResponseEntity.ok().build();
 	}
 }

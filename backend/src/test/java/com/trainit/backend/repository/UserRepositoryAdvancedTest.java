@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * weryfikację wartości {@code createdAt} oraz spójność relacji User-Role.
  */
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserRepositoryAdvancedTest {
 
 	@Autowired
@@ -39,13 +39,17 @@ class UserRepositoryAdvancedTest {
 
 	@BeforeEach
 	void setUp() {
-		userRole = new Role();
-		userRole.setName("USER");
-		userRole = roleRepository.save(userRole);
+		userRole = roleRepository.findByName("USER").orElseGet(() -> {
+			Role role = new Role();
+			role.setName("USER");
+			return roleRepository.save(role);
+		});
 
-		adminRole = new Role();
-		adminRole.setName("ADMIN");
-		adminRole = roleRepository.save(adminRole);
+		adminRole = roleRepository.findByName("ADMIN").orElseGet(() -> {
+			Role role = new Role();
+			role.setName("ADMIN");
+			return roleRepository.save(role);
+		});
 	}
 
 	/**
@@ -154,23 +158,25 @@ class UserRepositoryAdvancedTest {
 	@Test
 	@DisplayName("findAll po zapisie 5 użytkowników zwraca 5 elementów")
 	void findAll_returnsAllSavedUsers() {
+		long initialCount = userRepository.count();
 		for (int i = 0; i < 5; i++) {
 			userRepository.save(buildUser("user" + i + "@example.com"));
 		}
 		List<User> all = userRepository.findAll();
-		assertThat(all).hasSize(5);
+		assertThat(all).hasSize((int) (initialCount + 5));
 	}
 
 	@Test
 	@DisplayName("count po wielokrotnym zapisie i usunięciu zwraca aktualną liczbę")
 	void count_reflectsAfterDeletes() {
+		long initialCount = userRepository.count();
 		User u1 = userRepository.save(buildUser("c1@example.com"));
 		userRepository.save(buildUser("c2@example.com"));
 		userRepository.save(buildUser("c3@example.com"));
-		assertThat(userRepository.count()).isEqualTo(3);
+		assertThat(userRepository.count()).isEqualTo(initialCount + 3);
 
 		userRepository.delete(u1);
-		assertThat(userRepository.count()).isEqualTo(2);
+		assertThat(userRepository.count()).isEqualTo(initialCount + 2);
 	}
 
 	@Test

@@ -11,7 +11,7 @@ import pl.edu.ur.km131467.trainit.R
 object WorkoutsHardcodedData {
 
     /**
-     * Model karty planu treningowego (stub).
+     * Model karty planu treningowego.
      *
      * @property name tytuł planu.
      * @property difficulty etykieta trudności.

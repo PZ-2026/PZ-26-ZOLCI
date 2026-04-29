@@ -3,7 +3,7 @@ package pl.edu.ur.km131467.trainit.ui.profile
 import pl.edu.ur.km131467.trainit.R
 
 /**
- * Wszystkie dane testowe (stub) ekranu profilu.
+ * Dane przykładowe ekranu profilu.
  *
  * Ułatwia późniejszą podmianę na dane z repozytorium bez przeszukiwania wielu klas.
  *

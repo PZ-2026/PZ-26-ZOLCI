@@ -4,15 +4,19 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import kotlinx.coroutines.launch
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
+import pl.edu.ur.km131467.trainit.data.repository.FeatureRepository
 import pl.edu.ur.km131467.trainit.ui.common.BottomNavHelper
 import pl.edu.ur.km131467.trainit.ui.common.applyAppNameSpan
+import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
+import pl.edu.ur.km131467.trainit.ui.feature.ReportsActivity
+import pl.edu.ur.km131467.trainit.ui.feature.StatisticsActivity
 import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
-import pl.edu.ur.km131467.trainit.ui.main.MainHardcodedData
 import pl.edu.ur.km131467.trainit.ui.main.bindDashboardStats
 import pl.edu.ur.km131467.trainit.ui.main.bindWeeklyProgress
 
@@ -20,14 +24,19 @@ import pl.edu.ur.km131467.trainit.ui.main.bindWeeklyProgress
  * Główna aktywność aplikacji TrainIT pełniąca rolę dashboardu.
  *
  * Punkt wejścia (launcher): przy braku sesji ([SessionManager.isLoggedIn]) przekierowuje do
- * [LoginActivity]. Statystyki i cel tygodniowy wiązane są ze [MainHardcodedData] przez
- * funkcje w pakiecie [pl.edu.ur.km131467.trainit.ui.main].
+ * [LoginActivity]. Statystyki i cel tygodniowy są odczytywane z backendu przez
+ * [FeatureRepository].
  *
  * @see LoginActivity
  * @see pl.edu.ur.km131467.trainit.ui.workouts.WorkoutsActivity
  * @see pl.edu.ur.km131467.trainit.ui.profile.ProfileActivity
  */
 class MainActivity : AppCompatActivity() {
+    /** Sesja aktualnego użytkownika. */
+    private lateinit var sessionManager: SessionManager
+
+    /** Repozytorium danych modułów. */
+    private val featureRepository = FeatureRepository()
 
     /** Kolor żółty akcentu nagłówka „TrainIT”. */
     private val headerAccentColor: Int = Color.parseColor("#FFD600")
@@ -63,14 +72,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigation: BottomNavigationView
 
     /**
-     * Sprawdza sesję, ustawia layout i wypełnia dashboard danymi stubów.
+     * Sprawdza sesję, ustawia layout i wypełnia dashboard danymi bieżącego użytkownika.
      *
      * @param savedInstanceState zapisany stan instancji (nieużywany).
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!SessionManager(this).isLoggedIn()) {
+        sessionManager = SessionManager(this)
+        if (!sessionManager.isLoggedIn()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
@@ -80,24 +90,12 @@ class MainActivity : AppCompatActivity() {
 
         initViews()
         applyAppNameSpan(tvHeaderAppName, "TrainIT", headerAccentColor, 5, 7)
-        bindWeeklyProgress(
-            progressWeekly,
-            tvWeeklyGoalProgress,
-            tvWeeklyGoalHint,
-            MainHardcodedData.weeklyCompleted,
-            MainHardcodedData.weeklyGoal,
-        )
-        bindDashboardStats(
-            tvStatStreak,
-            tvStatWeek,
-            tvStatTotalHours,
-            tvStatCompleted,
-            MainHardcodedData.dashboardStats,
-        )
         BottomNavHelper.setupBottomNav(bottomNavigation, this, R.id.nav_home)
         setupClickListeners()
+        loadDashboardData()
     }
 
+    /** Inicjalizuje referencje kontrolek dashboardu. */
     private fun initViews() {
         tvHeaderAppName = findViewById(R.id.tvHeaderAppName)
         progressWeekly = findViewById(R.id.progressWeekly)
@@ -111,17 +109,22 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation = findViewById(R.id.bottomNavigation)
     }
 
+    /**
+     * Konfiguruje przejścia z sekcji aktywności do ekranów szczegółowych.
+     *
+     * Link „Zobacz wszystkie” otwiera moduł raportów, a karta aktywności moduł statystyk.
+     */
     private fun setupClickListeners() {
         tvSeeAll.setOnClickListener {
-            Toast.makeText(this, "Zobacz wszystkie (stub)", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, ReportsActivity::class.java))
         }
         findViewById<android.view.View>(R.id.cardRecentActivity).setOnClickListener {
-            Toast.makeText(this, "Szczegóły treningu (stub)", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, StatisticsActivity::class.java))
         }
     }
 
     /**
-     * Aktualizuje wartości kart statystyk (API pod przyszłe dane z sieci).
+     * Aktualizuje wartości kart statystyk.
      *
      * @param streak seria dni treningowych z rzędu.
      * @param weekDays liczba dni treningowych w bieżącym tygodniu.
@@ -134,7 +137,40 @@ class MainActivity : AppCompatActivity() {
             tvStatWeek,
             tvStatTotalHours,
             tvStatCompleted,
-            MainHardcodedData.DashboardStats(streak, weekDays, totalHours, completedCount),
+            pl.edu.ur.km131467.trainit.ui.main.MainHardcodedData.DashboardStats(
+                streak,
+                weekDays,
+                totalHours,
+                completedCount,
+            ),
         )
+    }
+
+    /** Pobiera dane podsumowania użytkownika i odświeża dashboard. */
+    private fun loadDashboardData() {
+        lifecycleScope.launch {
+            runCatching { featureRepository.getItems(FeatureModule.STATISTICS, sessionManager) }
+                .onSuccess { items ->
+                    val workouts = items.getOrNull(0)?.subtitle?.toIntOrNull() ?: 0
+                    val sessions = items.getOrNull(1)?.subtitle?.toIntOrNull() ?: 0
+                    val exercises = items.getOrNull(2)?.subtitle?.toIntOrNull() ?: 0
+                    bindWeeklyProgress(
+                        progressWeekly,
+                        tvWeeklyGoalProgress,
+                        tvWeeklyGoalHint,
+                        sessions.coerceAtMost(5),
+                        5,
+                    )
+                    updateStats(
+                        streak = sessions,
+                        weekDays = workouts,
+                        totalHours = sessions,
+                        completedCount = exercises,
+                    )
+                }
+                .onFailure {
+                    tvWeeklyGoalHint.text = it.message ?: "Nie udało się pobrać statystyk"
+                }
+        }
     }
 }

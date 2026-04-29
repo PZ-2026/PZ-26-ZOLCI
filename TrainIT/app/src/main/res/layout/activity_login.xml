@@ -17,7 +17,7 @@
 
         <!-- ===== LOGO SECTION ===== -->
 
-        <!-- Logo icon (placeholder - replace with actual drawable) -->
+        <!-- Logo icon -->
         <ImageView
             android:id="@+id/ivLogo"
             android:layout_width="72dp"

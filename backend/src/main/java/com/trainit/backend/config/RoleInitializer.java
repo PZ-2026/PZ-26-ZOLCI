@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Komponent startowy zapewniający istnienie podstawowej roli {@code USER} w bazie danych.
+ * Komponent startowy zapewniający istnienie podstawowych ról w bazie danych.
  *
  * <p>Implementuje {@link CommandLineRunner}, więc wykonuje się po podniesieniu kontekstu Springa.
- * Jeśli w tabeli {@code roles} nie ma rekordu o nazwie {@code USER}, tworzy go w jednej transakcji.
- * Dzięki temu {@link com.trainit.backend.service.AuthService} może bezpiecznie przypisać rolę
- * przy rejestracji bez ryzyka braku rekordu (o ile inicjalizacja zdążyła się wykonać).
+ * Jeśli w tabeli {@code roles} nie ma rekordów o nazwach {@code USER}, {@code TRAINER} lub
+ * {@code ADMIN}, tworzy je w jednej transakcji. Dzięki temu warstwa auth i logika ról działa
+ * spójnie ze specyfikacją projektu.
  *
  * @see RoleRepository
  * @see com.trainit.backend.entity.Role
@@ -34,7 +34,7 @@ public class RoleInitializer implements CommandLineRunner {
 	}
 
 	/**
-	 * Uruchamia seed roli {@code USER}, gdy nie istnieje w bazie.
+	 * Uruchamia seed ról systemowych, gdy nie istnieją w bazie.
 	 *
 	 * <p>Wykonywane w transakcji, aby zapis był atomowy względem bazy.
 	 *
@@ -43,9 +43,20 @@ public class RoleInitializer implements CommandLineRunner {
 	@Override
 	@Transactional
 	public void run(String... args) {
-		if (roleRepository.findByName("USER").isEmpty()) {
+		ensureRole("USER");
+		ensureRole("TRAINER");
+		ensureRole("ADMIN");
+	}
+
+	/**
+	 * Tworzy wskazaną rolę, jeśli nie istnieje.
+	 *
+	 * @param roleName nazwa roli
+	 */
+	private void ensureRole(String roleName) {
+		if (roleRepository.findByName(roleName).isEmpty()) {
 			Role role = new Role();
-			role.setName("USER");
+			role.setName(roleName);
 			roleRepository.save(role);
 		}
 	}

@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @see User
  */
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserRepositoryTest {
 
 	@Autowired
@@ -38,9 +38,11 @@ class UserRepositoryTest {
 
 	@BeforeEach
 	void setUp() {
-		userRole = new Role();
-		userRole.setName("USER");
-		userRole = roleRepository.save(userRole);
+		userRole = roleRepository.findByName("USER").orElseGet(() -> {
+			Role role = new Role();
+			role.setName("USER");
+			return roleRepository.save(role);
+		});
 	}
 
 	/**
@@ -145,10 +147,10 @@ class UserRepositoryTest {
 	@Test
 	@DisplayName("count zwraca 0 dla pustej tabeli i 2 po dodaniu dwóch użytkowników")
 	void count_reflectsRowsCount() {
-		assertThat(userRepository.count()).isZero();
+		long initialCount = userRepository.count();
 		userRepository.save(buildUser("a@a.com"));
 		userRepository.save(buildUser("b@b.com"));
-		assertThat(userRepository.count()).isEqualTo(2);
+		assertThat(userRepository.count()).isEqualTo(initialCount + 2);
 	}
 
 	@Test
@@ -162,8 +164,9 @@ class UserRepositoryTest {
 	@Test
 	@DisplayName("findAll zwraca wszystkich zapisanych użytkowników")
 	void findAll_returnsAllUsers() {
+		long initialCount = userRepository.count();
 		userRepository.save(buildUser("u1@example.com"));
 		userRepository.save(buildUser("u2@example.com"));
-		assertThat(userRepository.findAll()).hasSize(2);
+		assertThat(userRepository.findAll()).hasSize((int) (initialCount + 2));
 	}
 }

@@ -3,21 +3,23 @@ package pl.edu.ur.km131467.trainit.ui.profile
 import android.widget.TextView
 
 /**
- * Ustawia teksty nagłówka profilu i trzech kafelków statystyk (pill) ze stubów.
- *
- * @see ProfileHardcodedData
+ * Ustawia teksty nagłówka profilu i trzech kafelków statystyk.
  */
 object ProfileStatsBinder {
 
     /**
-     * Wypełnia pola nagłówka i statystyk wartościami z [data].
+     * Wypełnia pola nagłówka i statystyk wartościami przekazanymi z warstwy danych.
      *
      * @param tvProfileName pole imienia i nazwiska.
      * @param tvMemberSince pole daty członkostwa.
      * @param tvProfileStatWorkouts wartość „Treningów”.
      * @param tvProfileStatHours wartość sumy czasu.
      * @param tvProfileStatStreak wartość serii dni.
-     * @param data obiekt ze stubami tekstów profilu.
+     * @param profileName wyświetlane imię i nazwisko.
+     * @param memberSinceText opis członkostwa.
+     * @param workoutsText liczba treningów.
+     * @param hoursText łączny czas treningów.
+     * @param streakText seria dni.
      */
     fun bindHeaderAndPills(
         tvProfileName: TextView,
@@ -25,12 +27,16 @@ object ProfileStatsBinder {
         tvProfileStatWorkouts: TextView,
         tvProfileStatHours: TextView,
         tvProfileStatStreak: TextView,
-        data: ProfileHardcodedData = ProfileHardcodedData,
+        profileName: String,
+        memberSinceText: String,
+        workoutsText: String,
+        hoursText: String,
+        streakText: String,
     ) {
-        tvProfileName.text = data.profileDisplayName
-        tvMemberSince.text = data.memberSinceText
-        tvProfileStatWorkouts.text = data.statWorkouts
-        tvProfileStatHours.text = data.statHours
-        tvProfileStatStreak.text = data.statStreak
+        tvProfileName.text = profileName
+        tvMemberSince.text = memberSinceText
+        tvProfileStatWorkouts.text = workoutsText
+        tvProfileStatHours.text = hoursText
+        tvProfileStatStreak.text = streakText
     }
 }

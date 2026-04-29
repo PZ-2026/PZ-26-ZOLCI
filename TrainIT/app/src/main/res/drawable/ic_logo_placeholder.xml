@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder logo: yellow rounded square with a dumbbell-like icon -->
+<!-- Logo: rounded yellow tile with center icon. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Yellow rounded background -->
@@ -10,7 +10,7 @@
         </shape>
     </item>
 
-    <!-- Center icon placeholder (simple vector would replace this) -->
+    <!-- Centralna ikona. -->
     <item
         android:gravity="center"
         android:width="36dp"

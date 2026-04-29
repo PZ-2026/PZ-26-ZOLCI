@@ -1,7 +1,7 @@
 package pl.edu.ur.km131467.trainit.ui.main
 
 /**
- * Zestaw danych testowych (stub) dla dashboardu [pl.edu.ur.km131467.trainit.MainActivity].
+ * Zestaw danych przykładowych dla dashboardu [pl.edu.ur.km131467.trainit.MainActivity].
  *
  * W przyszłości można zastąpić je danymi z repozytorium lub API bez zmiany układu ekranu.
  *

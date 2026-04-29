@@ -4,6 +4,7 @@ import kotlinx.serialization.SerializationException
 import pl.edu.ur.km131467.trainit.data.remote.NetworkModule
 import pl.edu.ur.km131467.trainit.data.remote.api.AuthApi
 import pl.edu.ur.km131467.trainit.data.remote.dto.ErrorResponseDto
+import pl.edu.ur.km131467.trainit.data.remote.dto.ForgotPasswordRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginResponseDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.RegisterRequestDto
@@ -36,6 +37,23 @@ class AuthRepository(
     suspend fun login(request: LoginRequestDto): AuthResult<LoginResponseDto> {
         return try {
             mapResponse(authApi.login(request))
+        } catch (e: IOException) {
+            AuthResult.NetworkError
+        } catch (e: SerializationException) {
+            AuthResult.Error("Nieoczekiwany błąd: ${e.message}")
+        } catch (e: Exception) {
+            AuthResult.Error("Nieoczekiwany błąd: ${e.message}")
+        }
+    }
+
+    suspend fun forgotPassword(request: ForgotPasswordRequestDto): AuthResult<Unit> {
+        return try {
+            val response = authApi.forgotPassword(request)
+            if (response.isSuccessful) {
+                AuthResult.Success(Unit)
+            } else {
+                AuthResult.Error(parseErrorBody(response.code(), response.errorBody()?.string()))
+            }
         } catch (e: IOException) {
             AuthResult.NetworkError
         } catch (e: SerializationException) {

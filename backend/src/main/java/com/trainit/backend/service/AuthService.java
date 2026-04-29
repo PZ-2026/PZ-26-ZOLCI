@@ -2,6 +2,7 @@ package com.trainit.backend.service;
 
 import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
+import com.trainit.backend.dto.ForgotPasswordRequest;
 import com.trainit.backend.dto.RegisterRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.entity.Role;
@@ -10,11 +11,10 @@ import com.trainit.backend.exception.EmailAlreadyExistsException;
 import com.trainit.backend.exception.InvalidCredentialsException;
 import com.trainit.backend.repository.RoleRepository;
 import com.trainit.backend.repository.UserRepository;
+import com.trainit.backend.security.JwtService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 /**
  * Serwis domenowy obsługujący rejestrację i logowanie użytkowników.
@@ -22,9 +22,6 @@ import java.util.UUID;
  * <p>Operacje zapisu i odczytu danych użytkownika wykorzystują repozytoria JPA.
  * Hasła są hashowane algorytmem BCrypt przed zapisem. Metoda {@link #register(RegisterRequest)}
  * wykonuje się w transakcji zapisu; {@link #login(LoginRequest)} — w transakcji tylko do odczytu.
- *
- * <p>Token zwracany przy logowaniu jest obecnie losowym UUID (placeholder); docelowo może zostać
- * zastąpiony JWT — patrz komentarz TODO w kodzie metody {@link #login(LoginRequest)}.
  *
  * @see com.trainit.backend.controller.AuthController
  * @see UserRepository
@@ -42,17 +39,27 @@ public class AuthService {
 	/** Koder haseł BCrypt; bean zdefiniowany w {@link com.trainit.backend.config.PasswordEncoderConfig}. */
 	private final BCryptPasswordEncoder passwordEncoder;
 
+	/** Serwis generujący token JWT zwracany po poprawnym logowaniu. */
+	private final JwtService jwtService;
+
 	/**
 	 * Tworzy serwis z zależnościami dostarczonymi przez kontener Springa.
 	 *
 	 * @param userRepository repozytorium użytkowników
 	 * @param roleRepository repozytorium ról
 	 * @param passwordEncoder enkoder BCrypt do hashowania haseł
+	 * @param jwtService serwis generowania tokenów JWT
 	 */
-	public AuthService(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
+	public AuthService(
+			UserRepository userRepository,
+			RoleRepository roleRepository,
+			BCryptPasswordEncoder passwordEncoder,
+			JwtService jwtService
+	) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.jwtService = jwtService;
 	}
 
 	/**
@@ -101,7 +108,7 @@ public class AuthService {
 	}
 
 	/**
-	 * Uwierzytelnia użytkownika po emailu i haśle oraz zwraca token sesji (obecnie losowy UUID).
+	 * Uwierzytelnia użytkownika po emailu i haśle oraz zwraca token JWT.
 	 *
 	 * <p>Hasło z żądania jest porównywane ze skrótem z bazy metodą {@code matches}.
 	 * Konto musi mieć flagę aktywności ustawioną na {@code true}.
@@ -120,7 +127,28 @@ public class AuthService {
 		if (!Boolean.TRUE.equals(user.getIsActive())) {
 			throw new InvalidCredentialsException();
 		}
-		String token = UUID.randomUUID().toString(); // TODO: JWT w kolejnej iteracji
+		String token = jwtService.generateToken(
+				user.getId(),
+				user.getEmail(),
+				user.getRole() == null ? "USER" : user.getRole().getName()
+		);
 		return LoginResponse.fromEntity(user, token);
+	}
+
+	/**
+	 * Resetuje hasło użytkownika na podstawie adresu email.
+	 *
+	 * <p>Operacja jest idempotentna: gdy konto nie istnieje, metoda kończy się bez wyjątku
+	 * aby nie ujawniać informacji o istnieniu adresu email w systemie.
+	 *
+	 * @param request żądanie resetu hasła
+	 */
+	@Transactional
+	public void forgotPassword(ForgotPasswordRequest request) {
+		String email = normalizeEmail(request.getEmail());
+		userRepository.findByEmail(email).ifPresent(user -> {
+			user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+			userRepository.save(user);
+		});
 	}
 }

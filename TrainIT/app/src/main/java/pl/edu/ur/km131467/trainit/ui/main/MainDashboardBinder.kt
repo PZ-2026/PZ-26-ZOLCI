@@ -44,7 +44,7 @@ fun bindWeeklyProgress(
  * @param tvStatWeek pole „Ten tydzień” (format „{n} dni”).
  * @param tvStatTotalHours pole statystyki sumy czasu (format liczby godzin z sufiksem h).
  * @param tvStatCompleted pole „Ukończone”.
- * @param stats paczka wartości stub.
+ * @param stats paczka wartości statystyk.
  */
 fun bindDashboardStats(
     tvStatStreak: TextView,

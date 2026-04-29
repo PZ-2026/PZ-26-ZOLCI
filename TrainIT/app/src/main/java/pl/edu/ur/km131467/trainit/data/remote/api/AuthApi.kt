@@ -2,6 +2,7 @@ package pl.edu.ur.km131467.trainit.data.remote.api
 
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginResponseDto
+import pl.edu.ur.km131467.trainit.data.remote.dto.ForgotPasswordRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.RegisterRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.UserDto
 import retrofit2.Response
@@ -15,4 +16,7 @@ interface AuthApi {
 
     @POST("api/auth/login")
     suspend fun login(@Body body: LoginRequestDto): Response<LoginResponseDto>
+
+    @POST("api/auth/forgot-password")
+    suspend fun forgotPassword(@Body body: ForgotPasswordRequestDto): Response<Unit>
 }

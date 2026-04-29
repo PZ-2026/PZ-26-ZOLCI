@@ -31,6 +31,13 @@
         </activity>
         <activity android:name=".ui.profile.ProfileActivity" android:theme="@style/Theme.TrainIT">
         </activity>
+        <activity android:name=".ui.feature.ExercisesActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.SessionsActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.ReportsActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.StatisticsActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.SettingsActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.NotificationsActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.RolePanelActivity" android:theme="@style/Theme.TrainIT" />
     </application>
 
 </manifest>

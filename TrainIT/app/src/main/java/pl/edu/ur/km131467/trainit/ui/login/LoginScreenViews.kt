@@ -17,7 +17,7 @@ import pl.edu.ur.km131467.trainit.R
  * @param loginFormContainer kontener formularza logowania.
  * @param etEmail pole email (logowanie).
  * @param etPassword pole hasła (logowanie).
- * @param tvForgotPassword link „zapomniałem hasła” (stub).
+ * @param tvForgotPassword link „zapomniałem hasła”.
  * @param btnLogin przycisk logowania.
  * @param tvRegisterLink tekst z linkiem do rejestracji.
  * @param registerFormContainer kontener formularza rejestracji.

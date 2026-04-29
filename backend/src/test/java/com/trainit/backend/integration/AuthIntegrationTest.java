@@ -1,13 +1,13 @@
 package com.trainit.backend.integration;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.RegisterRequest;
 import com.trainit.backend.entity.Role;
 import com.trainit.backend.entity.User;
 import com.trainit.backend.repository.RoleRepository;
 import com.trainit.backend.repository.UserRepository;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

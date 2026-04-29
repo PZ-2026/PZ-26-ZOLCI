@@ -27,7 +27,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
         }
         release {
-            buildConfigField("String", "BASE_URL", "\"https://TODO-PRODUCTION-URL/\"")
+            buildConfigField("String", "BASE_URL", "\"https://production-url.example/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

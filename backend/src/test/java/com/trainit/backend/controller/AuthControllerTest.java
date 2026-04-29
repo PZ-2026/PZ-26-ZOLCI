@@ -1,14 +1,15 @@
 package com.trainit.backend.controller;
 
-import tools.jackson.databind.ObjectMapper;
 import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
+import com.trainit.backend.dto.ForgotPasswordRequest;
 import com.trainit.backend.dto.RegisterRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.exception.EmailAlreadyExistsException;
 import com.trainit.backend.exception.GlobalExceptionHandler;
 import com.trainit.backend.exception.InvalidCredentialsException;
 import com.trainit.backend.service.AuthService;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -71,6 +73,13 @@ class AuthControllerTest {
 		LoginRequest req = new LoginRequest();
 		req.setEmail("jan@example.com");
 		req.setPassword("Haslo123!");
+		return req;
+	}
+
+	private static ForgotPasswordRequest forgotPasswordRequest() {
+		ForgotPasswordRequest req = new ForgotPasswordRequest();
+		req.setEmail("jan@example.com");
+		req.setNewPassword("NoweHaslo123!");
 		return req;
 	}
 
@@ -214,5 +223,16 @@ class AuthControllerTest {
 						.content(objectMapper.writeValueAsString(registerRequest())))
 				.andExpect(status().isInternalServerError())
 				.andExpect(jsonPath("$.message").value("Wystąpił nieoczekiwany błąd"));
+	}
+
+	@Test
+	@DisplayName("POST /api/auth/forgot-password z poprawnym body → 200")
+	void forgotPassword_validBody_returns200() throws Exception {
+		doNothing().when(authService).forgotPassword(any());
+
+		mockMvc.perform(post("/api/auth/forgot-password")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(forgotPasswordRequest())))
+				.andExpect(status().isOk());
 	}
 }

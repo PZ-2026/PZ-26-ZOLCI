@@ -394,6 +394,66 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenReports"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="Raporty"
+                    app:backgroundTint="@color/card_dark"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/accent_yellow"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenSettings"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Ustawienia"
+                    app:backgroundTint="@color/card_dark"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/accent_yellow"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenNotifications"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="Powiadomienia"
+                    app:backgroundTint="@color/card_dark"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/accent_yellow"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenRolePanel"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Panel roli"
+                    app:backgroundTint="@color/card_dark"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/accent_yellow"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+
             <!-- ===== LOGOUT BUTTON ===== -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"

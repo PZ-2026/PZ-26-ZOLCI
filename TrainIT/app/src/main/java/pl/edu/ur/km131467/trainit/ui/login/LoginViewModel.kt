@@ -3,12 +3,15 @@ package pl.edu.ur.km131467.trainit.ui.login
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
 import pl.edu.ur.km131467.trainit.data.remote.NetworkModule
+import pl.edu.ur.km131467.trainit.data.remote.dto.ForgotPasswordRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.RegisterRequestDto
 import pl.edu.ur.km131467.trainit.data.repository.AuthRepository
@@ -30,6 +33,8 @@ class LoginViewModel(
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val messages: SharedFlow<String> = _messages
 
     fun resetToIdle() {
         _uiState.value = LoginUiState.Idle
@@ -96,6 +101,20 @@ class LoginViewModel(
                             LoginUiState.Error("Brak połączenia z serwerem")
                     }
                 }
+            }
+        }
+    }
+
+    fun forgotPassword(email: String, newPassword: String) {
+        viewModelScope.launch {
+            when (
+                val result = authRepository.forgotPassword(
+                    ForgotPasswordRequestDto(email.trim(), newPassword),
+                )
+            ) {
+                is AuthResult.Success -> _messages.emit("Hasło zostało zresetowane. Zaloguj się nowym hasłem.")
+                is AuthResult.Error -> _messages.emit(result.message)
+                AuthResult.NetworkError -> _messages.emit("Brak połączenia z serwerem")
             }
         }
     }
