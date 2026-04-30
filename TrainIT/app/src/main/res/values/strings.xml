@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TrainIT</string>
+    <string name="feature_list_empty_default">Brak danych do wyświetlenia.</string>
 </resources>

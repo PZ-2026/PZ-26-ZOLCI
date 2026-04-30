@@ -4,15 +4,14 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pl.edu.ur.km131467.trainit.MainActivity
 import pl.edu.ur.km131467.trainit.R
@@ -165,26 +164,27 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun handleForgotPassword() {
-        val emailInput = EditText(this).apply {
-            hint = "Email"
-            setText(loginViews.etEmail.text?.toString().orEmpty())
-        }
-        val passwordInput = EditText(this).apply {
-            hint = "Nowe hasło (min. 8 znaków)"
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or
-                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            val padding = (16 * resources.displayMetrics.density).toInt()
-            setPadding(padding, padding, padding, padding)
-            addView(emailInput)
-            addView(passwordInput)
-        }
-        AlertDialog.Builder(this)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_reset_password, null)
+        val emailInput = dialogView.findViewById<TextInputEditText>(R.id.etResetEmail)
+        val passwordInput = dialogView.findViewById<TextInputEditText>(R.id.etResetPassword)
+        emailInput.setText(loginViews.etEmail.text?.toString().orEmpty())
+
+        val dialog = MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_TrainIT_MaterialAlertDialog)
             .setTitle("Reset hasła")
-            .setView(layout)
-            .setPositiveButton("Zapisz") { _, _ ->
+            .setView(dialogView)
+            .setPositiveButton("Zapisz", null)
+            .setNegativeButton("Anuluj", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE)?.apply {
+                isAllCaps = false
+                setTextColor(resources.getColor(R.color.text_secondary, theme))
+            }
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE)?.apply {
+                isAllCaps = false
+                setTextColor(resources.getColor(R.color.accent_yellow, theme))
+            }?.setOnClickListener {
                 val email = emailInput.text?.toString().orEmpty().trim()
                 val newPassword = passwordInput.text?.toString().orEmpty()
                 when {
@@ -194,10 +194,13 @@ class LoginActivity : AppCompatActivity() {
                         "Nowe hasło musi mieć minimum 8 znaków",
                         Toast.LENGTH_SHORT,
                     ).show()
-                    else -> viewModel.forgotPassword(email, newPassword)
+                    else -> {
+                        viewModel.forgotPassword(email, newPassword)
+                        dialog.dismiss()
+                    }
                 }
             }
-            .setNegativeButton("Anuluj", null)
-            .show()
+        }
+        dialog.show()
     }
 }

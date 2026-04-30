@@ -35,7 +35,7 @@ class ProfileSummaryRenderer(
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
-                ).apply { bottomMargin = activity.dpToPx(14f) }
+                ).apply { bottomMargin = activity.dpToPx(12f) }
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
             }
@@ -50,7 +50,7 @@ class ProfileSummaryRenderer(
                     marginStart = activity.dpToPx(12f)
                 }
                 text = item.label
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                 setTextColor(ContextCompat.getColor(activity, R.color.text_secondary))
             }
 
@@ -60,7 +60,7 @@ class ProfileSummaryRenderer(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                 )
                 text = item.value
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                 setTextColor(Color.WHITE)
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
                 gravity = Gravity.END

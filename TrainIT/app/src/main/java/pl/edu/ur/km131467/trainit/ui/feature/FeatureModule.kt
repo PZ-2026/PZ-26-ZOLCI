@@ -13,7 +13,7 @@ enum class FeatureModule(
     val primaryActionLabel: String,
 ) {
     EXERCISES("Ćwiczenia", "Baza ćwiczeń i filtrowanie grup mięśniowych", "Dodaj ćwiczenie"),
-    SESSIONS("Sesje treningowe", "Start i rejestrowanie przebiegu sesji", "Rozpocznij sesję"),
+    SESSIONS("Historia treningów", "Lista sesji: plan, status, czas i data", "Rozpocznij sesję"),
     REPORTS("Raporty", "Generowanie i podgląd raportów aktywności", "Generuj raport"),
     STATISTICS("Statystyki", "Postęp treningowy i podsumowania", "Odśwież statystyki"),
     SETTINGS("Ustawienia", "Profil, jednostki i prywatność", "Zapisz zmiany"),

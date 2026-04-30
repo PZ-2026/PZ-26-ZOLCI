@@ -2,10 +2,15 @@ package pl.edu.ur.km131467.trainit.ui.workouts
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -15,6 +20,7 @@ import pl.edu.ur.km131467.trainit.data.local.SessionManager
 import pl.edu.ur.km131467.trainit.data.repository.FeatureRepository
 import pl.edu.ur.km131467.trainit.ui.common.BottomNavHelper
 import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
+import pl.edu.ur.km131467.trainit.ui.feature.FeatureListItem
 import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
 
 /**
@@ -47,6 +53,26 @@ class WorkoutsActivity : AppCompatActivity() {
     /** Repozytorium danych modułów (workouts/sessions). */
     private val featureRepository = FeatureRepository()
 
+    /** Ostatnio pobrana lista planów treningowych (używana do lokalnego filtrowania). */
+    private var allWorkouts: List<FeatureListItem> = emptyList()
+    private var hasActiveSession: Boolean = false
+    private var latestSession: FeatureListItem? = null
+    private var activeSession: FeatureListItem? = null
+    private var activePlanDurationMinutes: Int? = null
+    private var autoStopInProgress: Boolean = false
+
+    private lateinit var tvSessionOverviewTitle: TextView
+    private lateinit var tvSessionOverviewSubtitle: TextView
+    private val timerHandler = Handler(Looper.getMainLooper())
+    private var timerRunnable: Runnable? = null
+
+    /** Launcher ekranu dodawania treningu z odświeżeniem listy po zapisie. */
+    private val addWorkoutLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == RESULT_OK) {
+            loadWorkouts()
+        }
+    }
+
     /**
      * Inicjalizuje widoki, listę kart i nawigację.
      *
@@ -75,52 +101,48 @@ class WorkoutsActivity : AppCompatActivity() {
         workoutCardsContainer = findViewById(R.id.workoutCardsContainer)
         bottomNavigation = findViewById(R.id.bottomNavigation)
         fabAddWorkout = findViewById(R.id.fabAddWorkout)
+        tvSessionOverviewTitle = findViewById(R.id.tvSessionOverviewTitle)
+        tvSessionOverviewSubtitle = findViewById(R.id.tvSessionOverviewSubtitle)
     }
 
-    /** Obsługuje akcję FAB tworząc/usuwając plan przez backend i odświeżając listę. */
+    /** Obsługuje FAB otwierając formularz dodania nowego planu treningowego. */
     private fun setupFab() {
         fabAddWorkout.setOnClickListener {
-            lifecycleScope.launch {
-                runCatching { featureRepository.runPrimaryAction(FeatureModule.ROLE_PANEL, sessionManager) }
-                    .onSuccess {
-                        Toast.makeText(this@WorkoutsActivity, it, Toast.LENGTH_SHORT).show()
-                        loadWorkouts()
-                    }
-                    .onFailure {
-                        Toast.makeText(this@WorkoutsActivity, it.message ?: "Błąd akcji planu", Toast.LENGTH_LONG)
-                            .show()
-                    }
-            }
+            addWorkoutLauncher.launch(Intent(this, AddWorkoutActivity::class.java))
         }
     }
 
     /**
      * Podpina akcję pola wyszukiwania.
      *
-     * Enter odświeża listę danych z backendu.
+     * Enter filtruje lokalnie pobraną listę planów.
      */
     private fun setupSearchAction() {
         etSearch.setOnEditorActionListener { _, _, _ ->
-            loadWorkouts()
+            applySearchFilter()
             true
-        }
-        etSearch.setOnClickListener {
-            Toast.makeText(this, "Wyszukiwanie lokalne będzie dodane w kolejnym etapie", Toast.LENGTH_SHORT).show()
         }
     }
 
     /** Ładuje listę planów z backendu i renderuje karty. */
     private fun loadWorkouts() {
         lifecycleScope.launch {
-            runCatching { featureRepository.getItems(FeatureModule.ROLE_PANEL, sessionManager) }
-                .onSuccess { items ->
-                    WorkoutsCardsRenderer.populate(this@WorkoutsActivity, workoutCardsContainer, items) {
-                        Toast.makeText(
-                            this@WorkoutsActivity,
-                            "Uruchamianie sesji przeniesione do modułu Sesje",
-                            Toast.LENGTH_SHORT,
-                        ).show()
+            runCatching {
+                val workouts = featureRepository.getItems(FeatureModule.ROLE_PANEL, sessionManager)
+                val sessions = featureRepository.getItems(FeatureModule.SESSIONS, sessionManager)
+                workouts to sessions
+            }
+                .onSuccess { (workouts, sessions) ->
+                    allWorkouts = workouts
+                    latestSession = sessions.firstOrNull()
+                    activeSession = sessions.firstOrNull { it.subtitle.contains("ZAPLANOWANE", ignoreCase = true) }
+                    hasActiveSession = sessions.any { it.subtitle.contains("ZAPLANOWANE", ignoreCase = true) }
+                    activePlanDurationMinutes = resolveActivePlanDurationMinutes(activeSession, workouts)
+                    if (!hasActiveSession) {
+                        autoStopInProgress = false
                     }
+                    renderSessionOverview()
+                    applySearchFilter()
                 }
                 .onFailure { error ->
                     workoutCardsContainer.removeAllViews()
@@ -132,4 +154,227 @@ class WorkoutsActivity : AppCompatActivity() {
                 }
         }
     }
+
+    /** Filtruje listę po nazwie i opisie planu, bez dodatkowych wywołań backendu. */
+    private fun applySearchFilter() {
+        val query = etSearch.text?.toString().orEmpty().trim()
+        val filtered = if (query.isEmpty()) {
+            allWorkouts
+        } else {
+            allWorkouts.filter {
+                it.title.contains(query, ignoreCase = true) || it.subtitle.contains(query, ignoreCase = true)
+            }
+        }
+        WorkoutsCardsRenderer.populate(
+            this,
+            workoutCardsContainer,
+            filtered,
+            hasActiveSession = hasActiveSession,
+            onStartClicked = { workout -> onStartWorkoutClicked(workout) },
+            onStopClicked = { onStopActiveSessionClicked() },
+            onPlanClicked = { workout -> onEditWorkoutClicked(workout) },
+            onDeleteClicked = { workout -> onDeleteWorkoutClicked(workout) },
+        )
+    }
+
+    /** Otwiera formularz edycji planu. */
+    private fun onEditWorkoutClicked(workout: FeatureListItem) {
+        val workoutId = workout.id ?: run {
+            Toast.makeText(this, "Brak identyfikatora planu", Toast.LENGTH_SHORT).show()
+            return
+        }
+        addWorkoutLauncher.launch(
+            Intent(this, AddWorkoutActivity::class.java).putExtra(AddWorkoutActivity.EXTRA_WORKOUT_ID, workoutId),
+        )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopOverviewTimer()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (hasActiveSession) {
+            startOverviewTimer()
+        }
+    }
+
+    /** Uruchamia sesję treningową dla wybranego planu. */
+    private fun onStartWorkoutClicked(workout: FeatureListItem) {
+        val workoutId = workout.id
+        if (workoutId == null) {
+            Toast.makeText(this, "Brak identyfikatora planu", Toast.LENGTH_SHORT).show()
+            return
+        }
+        lifecycleScope.launch {
+            runCatching { featureRepository.startSessionForWorkout(sessionManager, workoutId) }
+                .onSuccess {
+                    sessionManager.setActiveSessionStartedAt(System.currentTimeMillis())
+                    hasActiveSession = true
+                    autoStopInProgress = false
+                    renderSessionOverview()
+                    applySearchFilter()
+                    loadWorkouts()
+                    Toast.makeText(this@WorkoutsActivity, "Uruchomiono sesję treningową", Toast.LENGTH_SHORT).show()
+                }
+                .onFailure {
+                    Toast.makeText(
+                        this@WorkoutsActivity,
+                        it.message ?: "Nie udało się uruchomić sesji",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+        }
+    }
+
+    /** Potwierdza i usuwa wybrany plan treningowy użytkownika. */
+    private fun onDeleteWorkoutClicked(workout: FeatureListItem) {
+        val workoutId = workout.id
+        if (workoutId == null) {
+            Toast.makeText(this, "Brak identyfikatora planu", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Usuń plan")
+            .setMessage("Czy na pewno chcesz usunąć plan \"${workout.title}\"?")
+            .setNegativeButton("Anuluj", null)
+            .setPositiveButton("Usuń") { _, _ ->
+                lifecycleScope.launch {
+                    runCatching { featureRepository.deleteWorkoutForUser(sessionManager, workoutId) }
+                        .onSuccess {
+                            Toast.makeText(this@WorkoutsActivity, "Plan usunięty", Toast.LENGTH_SHORT).show()
+                            loadWorkouts()
+                        }
+                        .onFailure {
+                            Toast.makeText(
+                                this@WorkoutsActivity,
+                                it.message ?: "Nie udało się usunąć planu",
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        }
+                }
+            }
+            .show()
+    }
+
+    /** Kończy aktywną sesję treningową i umożliwia nowy start. */
+    private fun onStopActiveSessionClicked() {
+        if (!hasActiveSession) {
+            Toast.makeText(this, "Brak aktywnej sesji", Toast.LENGTH_SHORT).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Zakończ sesję")
+            .setMessage("Zakończyć aktualną sesję treningową?")
+            .setNegativeButton("Anuluj", null)
+            .setPositiveButton("Zakończ") { _, _ ->
+                lifecycleScope.launch {
+                    runCatching { featureRepository.stopActiveSession(sessionManager) }
+                        .onSuccess {
+                            hasActiveSession = false
+                            autoStopInProgress = false
+                            renderSessionOverview()
+                            applySearchFilter()
+                            loadWorkouts()
+                            Toast.makeText(this@WorkoutsActivity, "Sesja zakończona", Toast.LENGTH_SHORT).show()
+                        }
+                        .onFailure {
+                            Toast.makeText(
+                                this@WorkoutsActivity,
+                                it.message ?: "Nie udało się zakończyć sesji",
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        }
+                }
+            }
+            .show()
+    }
+
+    /** Renderuje czytelny status aktywnej/ostatniej sesji nad listą planów. */
+    private fun renderSessionOverview() {
+        if (hasActiveSession) {
+            tvSessionOverviewTitle.text = "Sesja aktywna"
+            startOverviewTimer()
+        } else {
+            stopOverviewTimer()
+            tvSessionOverviewTitle.text = "Brak aktywnej sesji"
+            val last = latestSession
+            tvSessionOverviewSubtitle.text = if (last != null) {
+                "Ostatnia: ${last.title} - ${last.subtitle}"
+            } else {
+                "Rozpocznij trening, aby utworzyć pierwszą sesję."
+            }
+        }
+    }
+
+    /** Aktualizuje sekundnik aktywnej sesji w bloku statusu. */
+    private fun startOverviewTimer() {
+        val startedAt = sessionManager.getActiveSessionStartedAt() ?: return
+        stopOverviewTimer()
+        timerRunnable = object : Runnable {
+            override fun run() {
+                val elapsedSeconds = ((System.currentTimeMillis() - startedAt) / 1000).coerceAtLeast(0)
+                val minutes = elapsedSeconds / 60
+                val seconds = elapsedSeconds % 60
+                tvSessionOverviewSubtitle.text = String.format("Czas trwania: %02d:%02d", minutes, seconds)
+                val planSeconds = activePlanDurationMinutes?.times(60)
+                if (!autoStopInProgress && planSeconds != null && elapsedSeconds >= planSeconds) {
+                    autoStopInProgress = true
+                    autoStopActiveSessionAtPlanDuration()
+                    return
+                }
+                timerHandler.postDelayed(this, 1000L)
+            }
+        }.also { timerHandler.post(it) }
+    }
+
+    private fun autoStopActiveSessionAtPlanDuration() {
+        lifecycleScope.launch {
+            runCatching { featureRepository.stopActiveSession(sessionManager) }
+                .onSuccess {
+                    hasActiveSession = false
+                    autoStopInProgress = false
+                    Toast.makeText(
+                        this@WorkoutsActivity,
+                        "Sesja zakończona automatycznie po czasie planu",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    renderSessionOverview()
+                    applySearchFilter()
+                    loadWorkouts()
+                }
+                .onFailure {
+                    autoStopInProgress = false
+                    Toast.makeText(
+                        this@WorkoutsActivity,
+                        it.message ?: "Nie udało się automatycznie zakończyć sesji",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                    startOverviewTimer()
+                }
+        }
+    }
+
+    private fun resolveActivePlanDurationMinutes(
+        activeSessionItem: FeatureListItem?,
+        workouts: List<FeatureListItem>,
+    ): Int? {
+        val workoutName = extractWorkoutNameFromSessionTitle(activeSessionItem?.title ?: return null) ?: return null
+        val matchedWorkout = workouts.firstOrNull { it.title.equals(workoutName, ignoreCase = true) } ?: return null
+        val durationMatch = Regex("czas:\\s*(\\d+)\\s*min", RegexOption.IGNORE_CASE).find(matchedWorkout.subtitle)
+        return durationMatch?.groupValues?.getOrNull(1)?.toIntOrNull()
+    }
+
+    private fun extractWorkoutNameFromSessionTitle(title: String): String? {
+        val separatorIndex = title.indexOf(" - ")
+        if (separatorIndex < 0 || separatorIndex + 3 >= title.length) return null
+        return title.substring(separatorIndex + 3).trim().ifBlank { null }
+    }
+
+    private fun stopOverviewTimer() {
+        timerRunnable?.let { timerHandler.removeCallbacks(it) }
+        timerRunnable = null
+    }
+
 }

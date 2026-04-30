@@ -68,6 +68,35 @@
 
             </LinearLayout>
 
+            <!-- ===== SESSION OVERVIEW ===== -->
+            <LinearLayout
+                android:id="@+id/sessionOverviewCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card_dark"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvSessionOverviewTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status sesji"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSessionOverviewSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Brak aktywnej sesji"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
             <!-- ===== WORKOUT CARDS CONTAINER ===== -->
             <LinearLayout
                 android:id="@+id/workoutCardsContainer"

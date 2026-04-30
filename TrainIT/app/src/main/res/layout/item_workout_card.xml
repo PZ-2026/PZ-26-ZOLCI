@@ -6,6 +6,9 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
     android:background="@drawable/bg_card_dark"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     android:orientation="vertical"
     android:padding="18dp">
 
@@ -90,20 +93,41 @@
 
     </LinearLayout>
 
-    <!-- Row 4: Start workout button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnStartWorkout"
+    <!-- Row 4: Actions -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
-        android:text="Rozpocznij trening"
-        android:textColor="@color/black"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:backgroundTint="@color/accent_yellow"
-        app:cornerRadius="24dp"
-        app:icon="@drawable/ic_trending_up"
-        app:iconGravity="textStart"
-        app:iconTint="@color/black" />
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStartWorkout"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Rozpocznij trening"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/accent_yellow"
+            app:cornerRadius="24dp"
+            app:icon="@drawable/ic_trending_up"
+            app:iconGravity="textStart"
+            app:iconTint="@color/black" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteWorkout"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="0.42"
+            android:text="Usuń"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:backgroundTint="@android:color/transparent"
+            app:cornerRadius="24dp"
+            app:strokeColor="@color/text_secondary"
+            app:strokeWidth="1dp" />
+    </LinearLayout>
 
 </LinearLayout>

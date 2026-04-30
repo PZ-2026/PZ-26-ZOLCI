@@ -5,13 +5,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import pl.edu.ur.km131467.trainit.MainActivity
 import pl.edu.ur.km131467.trainit.R
+import pl.edu.ur.km131467.trainit.ui.feature.ExercisesActivity
 import pl.edu.ur.km131467.trainit.ui.profile.ProfileActivity
 import pl.edu.ur.km131467.trainit.ui.workouts.WorkoutsActivity
 
 /**
  * Wspólna konfiguracja dolnej nawigacji ([BottomNavigationView]) dla ekranów głównych aplikacji.
  *
- * Zapewnia spójne przełączanie między [MainActivity], [WorkoutsActivity] i [ProfileActivity]
+ * Zapewnia spójne przełączanie między [MainActivity], [WorkoutsActivity], [ExercisesActivity] i [ProfileActivity]
  * z zamykaniem bieżącej aktywności ([AppCompatActivity.finish]), aby nie narastał stos.
  *
  * @see MainActivity
@@ -29,7 +30,7 @@ object BottomNavHelper {
      * @param nav widok dolnej nawigacji z menu [R.menu.bottom_nav_menu].
      * @param activity aktywność-host (źródło [Intent] i miejsce wywołania [finish][AppCompatActivity.finish]).
      * @param currentItemId identyfikator zakładki odpowiadającej bieżącemu ekranowi
-     * ([R.id.nav_home], [R.id.nav_workouts] lub [R.id.nav_profile]).
+     * ([R.id.nav_home], [R.id.nav_workouts], [R.id.nav_exercises] lub [R.id.nav_profile]).
      */
     fun setupBottomNav(
         nav: BottomNavigationView,
@@ -49,6 +50,11 @@ object BottomNavHelper {
                 }
                 R.id.nav_workouts -> {
                     activity.startActivity(Intent(activity, WorkoutsActivity::class.java))
+                    activity.finish()
+                    true
+                }
+                R.id.nav_exercises -> {
+                    activity.startActivity(Intent(activity, ExercisesActivity::class.java))
                     activity.finish()
                     true
                 }

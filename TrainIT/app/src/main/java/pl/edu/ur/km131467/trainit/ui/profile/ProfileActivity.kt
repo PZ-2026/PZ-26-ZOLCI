@@ -3,16 +3,23 @@ package pl.edu.ur.km131467.trainit.ui.profile
 import android.content.Intent
 import android.os.Bundle
 import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import pl.edu.ur.km131467.trainit.R
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
+import pl.edu.ur.km131467.trainit.data.remote.dto.ProfileAchievementDto
+import pl.edu.ur.km131467.trainit.data.remote.dto.UpdateProfileRequestDto
+import pl.edu.ur.km131467.trainit.data.repository.AuthRepository
+import pl.edu.ur.km131467.trainit.data.repository.AuthResult
 import pl.edu.ur.km131467.trainit.data.repository.FeatureRepository
 import pl.edu.ur.km131467.trainit.ui.common.BottomNavHelper
-import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
 import pl.edu.ur.km131467.trainit.ui.feature.NotificationsActivity
 import pl.edu.ur.km131467.trainit.ui.feature.ReportsActivity
 import pl.edu.ur.km131467.trainit.ui.feature.RolePanelActivity
@@ -24,10 +31,9 @@ import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
  *
  * Deleguje budowę sekcji do rendererów ([WeeklyChartRenderer], [ProfileRecordsRenderer],
  * [AchievementsGridRenderer], [ProfileSummaryRenderer]) oraz wypełnianie nagłówka
- * przez [ProfileStatsBinder]. Dane testowe pochodzą z [ProfileHardcodedData].
+ * przez [ProfileStatsBinder]. Dane pobierane są z backendu PostgreSQL.
  * Wylogowanie czyści sesję przez [SessionManager].
  *
- * @see ProfileHardcodedData
  * @see LoginActivity
  */
 class ProfileActivity : AppCompatActivity() {
@@ -36,6 +42,7 @@ class ProfileActivity : AppCompatActivity() {
 
     /** Repozytorium danych backendowych. */
     private val featureRepository = FeatureRepository()
+    private val authRepository = AuthRepository()
 
     /** Dolna nawigacja (Home / Treningi / Profil). */
     private lateinit var bottomNavigation: BottomNavigationView
@@ -68,6 +75,8 @@ class ProfileActivity : AppCompatActivity() {
 
     /** Kontener na wiersze sekcji podsumowania. */
     private lateinit var summaryContainer: LinearLayout
+    private lateinit var tvProfileName: TextView
+    private lateinit var tvMemberSince: TextView
 
     /**
      * Wiąże layout, wypełnia dane profilu i konfiguruje nawigację oraz wylogowanie.
@@ -92,21 +101,11 @@ class ProfileActivity : AppCompatActivity() {
             tvProfileStatHours = findViewById(R.id.tvProfileStatHours),
             tvProfileStatStreak = findViewById(R.id.tvProfileStatStreak),
             profileName = listOfNotNull(sessionManager.getFirstName(), sessionManager.getRole()).joinToString(" • "),
-            memberSinceText = "Konto aktywne",
+            memberSinceText = "Ładowanie...",
             workoutsText = "0",
             hoursText = "0h",
             streakText = "0",
         )
-
-        WeeklyChartRenderer(this).render(
-            chartBarsContainer = chartBarsContainer,
-            chartDaysContainer = chartDaysContainer,
-            weeklyData = ProfileHardcodedData.weeklyChartValues,
-            dayLabels = ProfileHardcodedData.dayLabels,
-        )
-        ProfileRecordsRenderer(this).render(recordsContainer, ProfileHardcodedData.personalRecords)
-        AchievementsGridRenderer(this).render(achievementsRow1, achievementsRow2, ProfileHardcodedData.achievements)
-        ProfileSummaryRenderer(this).render(summaryContainer, ProfileHardcodedData.summaryItems)
 
         BottomNavHelper.setupBottomNav(bottomNavigation, this, R.id.nav_profile)
         setupFeatureShortcuts()
@@ -128,6 +127,10 @@ class ProfileActivity : AppCompatActivity() {
         achievementsRow1 = findViewById(R.id.achievementsRow1)
         achievementsRow2 = findViewById(R.id.achievementsRow2)
         summaryContainer = findViewById(R.id.summaryContainer)
+        tvProfileName = findViewById(R.id.tvProfileName)
+        tvMemberSince = findViewById(R.id.tvMemberSince)
+        tvProfileName.setOnClickListener { showEditProfileDialog() }
+        tvMemberSince.setOnClickListener { showEditProfileDialog() }
     }
 
     /**
@@ -161,12 +164,7 @@ class ProfileActivity : AppCompatActivity() {
     /** Pobiera dane profilu użytkownika z backendu i odświeża sekcję statystyk oraz podsumowania. */
     private fun loadProfileData() {
         lifecycleScope.launch {
-            val statistics = runCatching { featureRepository.getItems(FeatureModule.STATISTICS, sessionManager) }.getOrDefault(emptyList())
-            val settings = runCatching { featureRepository.getItems(FeatureModule.SETTINGS, sessionManager) }.getOrDefault(emptyList())
-            val notifications = runCatching {
-                featureRepository.getItems(FeatureModule.NOTIFICATIONS, sessionManager)
-            }.getOrDefault(emptyList())
-            val reports = runCatching { featureRepository.getItems(FeatureModule.REPORTS, sessionManager) }.getOrDefault(emptyList())
+            val overview = runCatching { featureRepository.getProfileOverview(sessionManager) }.getOrNull() ?: return@launch
 
             ProfileStatsBinder.bindHeaderAndPills(
                 tvProfileName = findViewById(R.id.tvProfileName),
@@ -174,34 +172,131 @@ class ProfileActivity : AppCompatActivity() {
                 tvProfileStatWorkouts = findViewById(R.id.tvProfileStatWorkouts),
                 tvProfileStatHours = findViewById(R.id.tvProfileStatHours),
                 tvProfileStatStreak = findViewById(R.id.tvProfileStatStreak),
-                profileName = listOfNotNull(sessionManager.getFirstName(), sessionManager.getRole()).joinToString(" • "),
-                memberSinceText = settings.firstOrNull()?.subtitle ?: "Konto aktywne",
-                workoutsText = statistics.getOrNull(0)?.subtitle ?: "0",
-                hoursText = "${statistics.getOrNull(1)?.subtitle ?: "0"}h",
-                streakText = statistics.getOrNull(2)?.subtitle ?: "0",
+                profileName = overview.profileName,
+                memberSinceText = overview.memberSinceText,
+                workoutsText = overview.workoutsText,
+                hoursText = overview.totalHoursText,
+                streakText = overview.streakText,
+            )
+
+            chartBarsContainer.removeAllViews()
+            chartDaysContainer.removeAllViews()
+            WeeklyChartRenderer(this@ProfileActivity).render(
+                chartBarsContainer = chartBarsContainer,
+                chartDaysContainer = chartDaysContainer,
+                weeklyData = overview.weeklyHours,
+                dayLabels = ProfileHardcodedData.dayLabels,
+            )
+
+            recordsContainer.removeAllViews()
+            ProfileRecordsRenderer(this@ProfileActivity).render(
+                recordsContainer,
+                overview.personalRecords.map {
+                    ProfileHardcodedData.PersonalRecord(it.exercise, it.weight, it.date, it.reps)
+                },
+            )
+
+            achievementsRow1.removeAllViews()
+            achievementsRow2.removeAllViews()
+            AchievementsGridRenderer(this@ProfileActivity).render(
+                achievementsRow1,
+                achievementsRow2,
+                overview.achievements.map { it.toUiAchievement() },
             )
 
             summaryContainer.removeAllViews()
             ProfileSummaryRenderer(this@ProfileActivity).render(
                 summaryContainer,
-                listOf(
+                overview.summaryItems.map {
                     ProfileHardcodedData.SummaryItem(
-                        R.drawable.ic_dumbbell,
-                        reports.firstOrNull()?.title ?: "Raport",
-                        reports.firstOrNull()?.subtitle ?: "Brak",
-                    ),
-                    ProfileHardcodedData.SummaryItem(
-                        R.drawable.ic_clock,
-                        notifications.firstOrNull()?.title ?: "Powiadomienia",
-                        notifications.firstOrNull()?.subtitle ?: "Brak",
-                    ),
-                    ProfileHardcodedData.SummaryItem(
-                        R.drawable.ic_fire,
-                        settings.getOrNull(1)?.title ?: "Ustawienia",
-                        settings.getOrNull(1)?.subtitle ?: "Brak",
-                    ),
-                ),
+                        icon = when {
+                            it.title.contains("raport", ignoreCase = true) -> R.drawable.ic_dumbbell
+                            it.title.contains("przypomnienia", ignoreCase = true) -> R.drawable.ic_clock
+                            else -> R.drawable.ic_fire
+                        },
+                        label = it.title,
+                        value = it.subtitle,
+                    )
+                },
             )
         }
+    }
+
+    private fun ProfileAchievementDto.toUiAchievement(): ProfileHardcodedData.Achievement {
+        val iconRes = when (key.lowercase()) {
+            "fire" -> R.drawable.ic_fire
+            "muscle" -> R.drawable.ic_muscle
+            "trophy" -> R.drawable.ic_trophy
+            "target" -> R.drawable.ic_target
+            "star" -> R.drawable.ic_star
+            else -> R.drawable.ic_medal
+        }
+        return ProfileHardcodedData.Achievement(iconRes, label, unlocked)
+    }
+
+    private fun showEditProfileDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_profile, null)
+        val etFirstName = dialogView.findViewById<TextInputEditText>(R.id.etEditProfileFirstName)
+        val etLastName = dialogView.findViewById<TextInputEditText>(R.id.etEditProfileLastName)
+        val etEmail = dialogView.findViewById<TextInputEditText>(R.id.etEditProfileEmail)
+        val etPassword = dialogView.findViewById<TextInputEditText>(R.id.etEditProfilePassword)
+        etFirstName.setText(sessionManager.getFirstName().orEmpty())
+        etLastName.setText(sessionManager.getLastName().orEmpty())
+        etEmail.setText(sessionManager.getEmail().orEmpty())
+
+        val dialog = MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_TrainIT_MaterialAlertDialog)
+            .setTitle("Edytuj profil")
+            .setView(dialogView)
+            .setNegativeButton("Anuluj", null)
+            .setPositiveButton("Zapisz", null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                val firstName = etFirstName.text?.toString()?.trim().orEmpty()
+                val lastName = etLastName.text?.toString()?.trim().orEmpty()
+                val email = etEmail.text?.toString()?.trim().orEmpty()
+                val password = etPassword.text?.toString()?.trim().orEmpty()
+                if (firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
+                    Toast.makeText(this, "Uzupełnij imię, nazwisko i email", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (password.isNotBlank() && password.length < 8) {
+                    Toast.makeText(this, "Nowe hasło musi mieć minimum 8 znaków", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val token = sessionManager.getToken()
+                if (token.isNullOrBlank()) {
+                    Toast.makeText(this, "Brak aktywnej sesji", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                lifecycleScope.launch {
+                    when (
+                        val result = authRepository.updateMe(
+                            token,
+                            UpdateProfileRequestDto(
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = email,
+                                newPassword = password.ifBlank { null },
+                            ),
+                        )
+                    ) {
+                        is AuthResult.Success -> {
+                            sessionManager.updateProfile(
+                                firstName = result.data.firstName,
+                                lastName = result.data.lastName,
+                                email = result.data.email,
+                            )
+                            dialog.dismiss()
+                            loadProfileData()
+                            Toast.makeText(this@ProfileActivity, "Zapisano zmiany profilu", Toast.LENGTH_SHORT).show()
+                        }
+                        is AuthResult.Error -> Toast.makeText(this@ProfileActivity, result.message, Toast.LENGTH_LONG).show()
+                        AuthResult.NetworkError -> Toast.makeText(this@ProfileActivity, "Brak połączenia z serwerem", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+        dialog.show()
     }
 }

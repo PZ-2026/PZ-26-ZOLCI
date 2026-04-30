@@ -20,6 +20,15 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
+    <!-- Ciemny dialog — tylko kolory (bez własnych TextAppearance, żeby uniknąć crashy inflacji) -->
+    <style name="ThemeOverlay.TrainIT.MaterialAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/card_dark_elevated</item>
+        <item name="android:colorBackground">@color/card_dark</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorPrimary">@color/accent_yellow</item>
+    </style>
+
     <!-- TextInputLayout custom style -->
     <style name="Widget.TrainIT.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundMode">outline</item>

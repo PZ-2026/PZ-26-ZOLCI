@@ -34,14 +34,14 @@ class ProfileRecordsRenderer(
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
-                ).apply { bottomMargin = activity.dpToPx(10f) }
+                ).apply { bottomMargin = activity.dpToPx(12f) }
                 orientation = LinearLayout.VERTICAL
                 setBackgroundResource(R.drawable.bg_card_dark)
                 setPadding(
                     activity.dpToPx(16f),
-                    activity.dpToPx(14f),
                     activity.dpToPx(16f),
-                    activity.dpToPx(14f),
+                    activity.dpToPx(16f),
+                    activity.dpToPx(16f),
                 )
             }
 
@@ -57,7 +57,7 @@ class ProfileRecordsRenderer(
             val tvExercise = TextView(activity).apply {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                 text = record.exercise
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                 setTextColor(Color.WHITE)
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
             }
@@ -68,7 +68,7 @@ class ProfileRecordsRenderer(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                 )
                 text = record.weight
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f)
                 setTextColor(Color.WHITE)
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
             }

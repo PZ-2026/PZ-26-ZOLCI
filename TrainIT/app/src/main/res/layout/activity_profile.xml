@@ -21,8 +21,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="24dp">
+            android:paddingHorizontal="22dp"
+            android:paddingTop="20dp">
 
             <!-- ===== PROFILE HEADER ===== -->
             <LinearLayout
@@ -178,7 +178,7 @@
                 android:layout_marginTop="24dp"
                 android:background="@drawable/bg_card_dark"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <!-- Section header -->
                 <LinearLayout
@@ -198,7 +198,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Aktywność w tym tygodniu"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         android:textColor="@color/white" />
 
@@ -312,7 +312,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Rekordy osobiste"
-                    android:textSize="18sp"
+                    android:textSize="19sp"
                     android:textStyle="bold"
                     android:textColor="@color/white" />
 
@@ -345,7 +345,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Osiągnięcia"
-                    android:textSize="18sp"
+                    android:textSize="19sp"
                     android:textStyle="bold"
                     android:textColor="@color/white" />
 
@@ -374,13 +374,13 @@
                 android:layout_marginTop="24dp"
                 android:background="@drawable/bg_card_dark"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Podsumowanie"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="@color/white" />
 
@@ -406,10 +406,11 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Raporty"
-                    app:backgroundTint="@color/card_dark"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnOpenSettings"
@@ -418,10 +419,11 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:text="Ustawienia"
-                    app:backgroundTint="@color/card_dark"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -436,10 +438,11 @@
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:text="Powiadomienia"
-                    app:backgroundTint="@color/card_dark"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnOpenRolePanel"
@@ -448,10 +451,11 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:text="Panel roli"
-                    app:backgroundTint="@color/card_dark"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
             </LinearLayout>
 
             <!-- ===== LOGOUT BUTTON ===== -->
@@ -462,6 +466,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="16dp"
                 android:text="Wyloguj się"
+                android:textAllCaps="false"
                 android:textColor="@color/logout_red"
                 android:textStyle="bold"
                 android:textSize="15sp"

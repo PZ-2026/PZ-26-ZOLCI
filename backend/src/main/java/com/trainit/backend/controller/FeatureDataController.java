@@ -2,9 +2,16 @@ package com.trainit.backend.controller;
 
 import com.trainit.backend.dto.CreateExerciseRequest;
 import com.trainit.backend.dto.CreateWorkoutRequest;
+import com.trainit.backend.dto.ExerciseResultRequest;
 import com.trainit.backend.dto.FinishSessionRequest;
 import com.trainit.backend.dto.FeatureItemResponse;
+import com.trainit.backend.dto.ProfileOverviewResponse;
+import com.trainit.backend.dto.SessionExerciseResultResponse;
 import com.trainit.backend.dto.StartSessionRequest;
+import com.trainit.backend.dto.UpdateSettingRequest;
+import com.trainit.backend.dto.WorkoutExerciseLineResponse;
+import com.trainit.backend.dto.WorkoutExerciseRequest;
+import com.trainit.backend.dto.WorkoutPlanDetailResponse;
 import com.trainit.backend.security.JwtPrincipal;
 import com.trainit.backend.service.FeatureDataService;
 import jakarta.validation.Valid;
@@ -15,6 +22,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -105,6 +113,20 @@ public class FeatureDataController {
 	}
 
 	/**
+	 * Aktualizuje pojedyncze ustawienie użytkownika.
+	 */
+	@PutMapping("/settings/{settingId}")
+	public ResponseEntity<FeatureItemResponse> updateSetting(
+			@PathVariable Integer settingId,
+			@Valid @RequestBody UpdateSettingRequest request,
+			Authentication authentication
+	) {
+		return ResponseEntity.ok(
+				featureDataService.updateSetting(resolveRequiredUserId(authentication), settingId, request)
+		);
+	}
+
+	/**
 	 * Zwraca dane modułu powiadomień.
 	 *
 	 * @return lista pozycji modułu powiadomień
@@ -112,6 +134,14 @@ public class FeatureDataController {
 	@GetMapping("/notifications")
 	public List<FeatureItemResponse> notifications(@RequestParam(required = false) Integer userId, Authentication authentication) {
 		return featureDataService.getNotifications(resolveEffectiveUserId(authentication, userId));
+	}
+
+	/**
+	 * Zwraca pełne dane ekranu profilu użytkownika.
+	 */
+	@GetMapping("/profile-overview")
+	public ResponseEntity<ProfileOverviewResponse> profileOverview(Authentication authentication) {
+		return ResponseEntity.ok(featureDataService.getProfileOverview(resolveRequiredUserId(authentication)));
 	}
 
 	/**
@@ -138,6 +168,78 @@ public class FeatureDataController {
 	@DeleteMapping("/workouts/{workoutId}")
 	public ResponseEntity<Void> deleteWorkout(@PathVariable Integer workoutId, Authentication authentication) {
 		featureDataService.deleteWorkout(resolveRequiredUserId(authentication), workoutId);
+		return ResponseEntity.noContent().build();
+	}
+
+	/**
+	 * Zwraca szczegóły planu treningowego (edycja w aplikacji mobilnej).
+	 *
+	 * @param workoutId identyfikator planu
+	 * @return dane planu
+	 */
+	@GetMapping("/workouts/{workoutId}")
+	public ResponseEntity<WorkoutPlanDetailResponse> getWorkoutDetail(
+			@PathVariable Integer workoutId,
+			Authentication authentication
+	) {
+		return ResponseEntity.ok(
+				featureDataService.getWorkoutDetail(resolveRequiredUserId(authentication), workoutId)
+		);
+	}
+
+	/**
+	 * Aktualizuje istniejący plan treningowy.
+	 *
+	 * @param workoutId identyfikator planu
+	 * @param request nowe dane planu
+	 * @return zaktualizowana pozycja listy
+	 */
+	@PutMapping("/workouts/{workoutId}")
+	public ResponseEntity<FeatureItemResponse> updateWorkout(
+			@PathVariable Integer workoutId,
+			@Valid @RequestBody CreateWorkoutRequest request,
+			Authentication authentication
+	) {
+		return ResponseEntity.ok(
+				featureDataService.updateWorkout(resolveRequiredUserId(authentication), workoutId, request)
+		);
+	}
+
+	/**
+	 * Lista ćwiczeń w planie (parametry serii / powtórzeń).
+	 */
+	@GetMapping("/workouts/{workoutId}/exercises")
+	public List<WorkoutExerciseLineResponse> listWorkoutExercises(
+			@PathVariable Integer workoutId,
+			Authentication authentication
+	) {
+		return featureDataService.listWorkoutExerciseLines(resolveRequiredUserId(authentication), workoutId);
+	}
+
+	/**
+	 * Dodaje ćwiczenie do planu.
+	 */
+	@PostMapping("/workouts/{workoutId}/exercises")
+	public ResponseEntity<WorkoutExerciseLineResponse> addWorkoutExercise(
+			@PathVariable Integer workoutId,
+			@Valid @RequestBody WorkoutExerciseRequest request,
+			Authentication authentication
+	) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(
+				featureDataService.addWorkoutExerciseLine(resolveRequiredUserId(authentication), workoutId, request)
+		);
+	}
+
+	/**
+	 * Usuwa pozycję ćwiczenia z planu.
+	 */
+	@DeleteMapping("/workouts/{workoutId}/exercises/{lineId}")
+	public ResponseEntity<Void> deleteWorkoutExercise(
+			@PathVariable Integer workoutId,
+			@PathVariable Integer lineId,
+			Authentication authentication
+	) {
+		featureDataService.deleteWorkoutExerciseLine(resolveRequiredUserId(authentication), workoutId, lineId);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -187,6 +289,76 @@ public class FeatureDataController {
 		return ResponseEntity.ok(
 				featureDataService.finishSession(resolveRequiredUserId(authentication), sessionId, request.getDuration())
 		);
+	}
+
+	/**
+	 * Anuluje aktywną (zaplanowaną) sesję treningową użytkownika.
+	 *
+	 * @param sessionId identyfikator sesji
+	 * @return odpowiedź bez treści
+	 */
+	@DeleteMapping("/sessions/{sessionId}")
+	public ResponseEntity<Void> cancelSession(@PathVariable Integer sessionId, Authentication authentication) {
+		featureDataService.cancelSession(resolveRequiredUserId(authentication), sessionId);
+		return ResponseEntity.noContent().build();
+	}
+
+	/**
+	 * Zwraca wyniki ćwiczeń zapisane w sesji treningowej.
+	 */
+	@GetMapping("/sessions/{sessionId}/results")
+	public List<SessionExerciseResultResponse> sessionResults(
+			@PathVariable Integer sessionId,
+			Authentication authentication
+	) {
+		return featureDataService.getSessionExerciseResults(resolveRequiredUserId(authentication), sessionId);
+	}
+
+	/**
+	 * Dodaje wynik ćwiczenia do sesji treningowej.
+	 */
+	@PostMapping("/sessions/{sessionId}/results")
+	public ResponseEntity<SessionExerciseResultResponse> addSessionResult(
+			@PathVariable Integer sessionId,
+			@Valid @RequestBody ExerciseResultRequest request,
+			Authentication authentication
+	) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(
+				featureDataService.addSessionExerciseResult(resolveRequiredUserId(authentication), sessionId, request)
+		);
+	}
+
+	/**
+	 * Aktualizuje istniejący wynik ćwiczenia w sesji treningowej.
+	 */
+	@PutMapping("/sessions/{sessionId}/results/{resultId}")
+	public ResponseEntity<SessionExerciseResultResponse> updateSessionResult(
+			@PathVariable Integer sessionId,
+			@PathVariable Integer resultId,
+			@Valid @RequestBody ExerciseResultRequest request,
+			Authentication authentication
+	) {
+		return ResponseEntity.ok(
+				featureDataService.updateSessionExerciseResult(
+						resolveRequiredUserId(authentication),
+						sessionId,
+						resultId,
+						request
+				)
+		);
+	}
+
+	/**
+	 * Usuwa wynik ćwiczenia z sesji treningowej.
+	 */
+	@DeleteMapping("/sessions/{sessionId}/results/{resultId}")
+	public ResponseEntity<Void> deleteSessionResult(
+			@PathVariable Integer sessionId,
+			@PathVariable Integer resultId,
+			Authentication authentication
+	) {
+		featureDataService.deleteSessionExerciseResult(resolveRequiredUserId(authentication), sessionId, resultId);
+		return ResponseEntity.noContent().build();
 	}
 
 	/**

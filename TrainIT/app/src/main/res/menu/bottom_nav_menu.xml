@@ -12,6 +12,11 @@
         android:title="Treningi" />
 
     <item
+        android:id="@+id/nav_exercises"
+        android:icon="@drawable/ic_nav_exercises"
+        android:title="Ćwiczenia" />
+
+    <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_nav_profile"
         android:title="Profil" />

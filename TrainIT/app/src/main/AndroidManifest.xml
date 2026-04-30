@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -27,12 +28,15 @@
         </activity>
         <activity android:name=".ui.login.LoginActivity" android:theme="@style/Theme.TrainIT">
         </activity>
+        <activity android:name=".ui.workouts.AddWorkoutActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.workouts.WorkoutExercisesActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.workouts.WorkoutsActivity" android:theme="@style/Theme.TrainIT">
         </activity>
         <activity android:name=".ui.profile.ProfileActivity" android:theme="@style/Theme.TrainIT">
         </activity>
         <activity android:name=".ui.feature.ExercisesActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.feature.SessionsActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.feature.SessionResultsActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.feature.ReportsActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.feature.StatisticsActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.feature.SettingsActivity" android:theme="@style/Theme.TrainIT" />

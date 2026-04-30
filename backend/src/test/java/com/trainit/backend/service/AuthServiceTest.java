@@ -4,6 +4,7 @@ import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
 import com.trainit.backend.dto.ForgotPasswordRequest;
 import com.trainit.backend.dto.RegisterRequest;
+import com.trainit.backend.dto.UpdateProfileRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.entity.Role;
 import com.trainit.backend.entity.User;
@@ -393,6 +394,65 @@ class AuthServiceTest {
 		authService.forgotPassword(forgotPasswordRequest("brak@example.com", "NoweHaslo123!"));
 
 		verify(userRepository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("getProfile zwraca dane użytkownika")
+	void getProfile_returnsUserResponse() {
+		User user = buildActiveUser("jan@example.com", "hash");
+		user.setId(10);
+		when(userRepository.findById(10)).thenReturn(Optional.of(user));
+
+		UserResponse response = authService.getProfile(10);
+
+		assertThat(response.id()).isEqualTo(10);
+		assertThat(response.email()).isEqualTo("jan@example.com");
+		assertThat(response.firstName()).isEqualTo("Jan");
+	}
+
+	@Test
+	@DisplayName("updateProfile aktualizuje dane bez zmiany hasła gdy newPassword jest puste")
+	void updateProfile_updatesNamesAndEmail_withoutPasswordChange() {
+		User user = buildActiveUser("old@example.com", "old_hash");
+		user.setId(5);
+		when(userRepository.findById(5)).thenReturn(Optional.of(user));
+		when(userRepository.existsByEmailAndIdNot("new@example.com", 5)).thenReturn(false);
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		UpdateProfileRequest request = new UpdateProfileRequest();
+		request.setFirstName(" Nowe ");
+		request.setLastName(" Nazwisko ");
+		request.setEmail(" NEW@EXAMPLE.COM ");
+		request.setNewPassword("   ");
+
+		UserResponse response = authService.updateProfile(5, request);
+
+		assertThat(response.firstName()).isEqualTo("Nowe");
+		assertThat(response.lastName()).isEqualTo("Nazwisko");
+		assertThat(response.email()).isEqualTo("new@example.com");
+		verify(passwordEncoder, never()).encode(anyString());
+	}
+
+	@Test
+	@DisplayName("updateProfile hashuje nowe hasło gdy przekazane")
+	void updateProfile_updatesPasswordHash_whenProvided() {
+		User user = buildActiveUser("old@example.com", "old_hash");
+		user.setId(7);
+		when(userRepository.findById(7)).thenReturn(Optional.of(user));
+		when(userRepository.existsByEmailAndIdNot("old@example.com", 7)).thenReturn(false);
+		when(passwordEncoder.encode("NoweHaslo123!")).thenReturn("new_hash");
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		UpdateProfileRequest request = new UpdateProfileRequest();
+		request.setFirstName("Jan");
+		request.setLastName("Kowalski");
+		request.setEmail("old@example.com");
+		request.setNewPassword("NoweHaslo123!");
+
+		authService.updateProfile(7, request);
+
+		assertThat(user.getPasswordHash()).isEqualTo("new_hash");
+		verify(passwordEncoder).encode("NoweHaslo123!");
 	}
 
 	/**

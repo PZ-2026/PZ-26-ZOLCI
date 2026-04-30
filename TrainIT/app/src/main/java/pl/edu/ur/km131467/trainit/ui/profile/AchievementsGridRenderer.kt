@@ -51,8 +51,9 @@ class AchievementsGridRenderer(
      */
     fun createAchievementBadge(achievement: ProfileHardcodedData.Achievement): LinearLayout {
         return LinearLayout(activity).apply {
-            layoutParams = LinearLayout.LayoutParams(0, activity.dpToPx(100f), 1f).apply {
-                marginEnd = activity.dpToPx(8f)
+            layoutParams = LinearLayout.LayoutParams(0, activity.dpToPx(108f), 1f).apply {
+                marginStart = activity.dpToPx(4f)
+                marginEnd = activity.dpToPx(4f)
             }
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -61,17 +62,17 @@ class AchievementsGridRenderer(
                 else R.drawable.bg_achievement_locked,
             )
             setPadding(
-                activity.dpToPx(8f),
+                activity.dpToPx(10f),
                 activity.dpToPx(14f),
-                activity.dpToPx(8f),
+                activity.dpToPx(10f),
                 activity.dpToPx(14f),
             )
 
             val icon = ImageView(activity).apply {
-                layoutParams = LinearLayout.LayoutParams(activity.dpToPx(28f), activity.dpToPx(28f))
+                layoutParams = LinearLayout.LayoutParams(activity.dpToPx(30f), activity.dpToPx(30f))
                 setImageResource(achievement.icon)
                 if (!achievement.unlocked) {
-                    alpha = 0.4f
+                    alpha = 0.55f
                     setColorFilter(
                         ContextCompat.getColor(activity, R.color.achievement_locked_icon),
                         android.graphics.PorterDuff.Mode.SRC_IN,
@@ -86,7 +87,7 @@ class AchievementsGridRenderer(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                 ).apply { topMargin = activity.dpToPx(6f) }
                 text = achievement.label
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 minLines = 2
                 maxLines = 2
                 setTextColor(

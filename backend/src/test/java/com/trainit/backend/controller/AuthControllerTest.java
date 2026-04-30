@@ -23,7 +23,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -234,5 +236,21 @@ class AuthControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(forgotPasswordRequest())))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("GET /api/auth/me bez kontekstu auth → 400")
+	void me_withoutAuth_returns400() throws Exception {
+		mockMvc.perform(get("/api/auth/me"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("PUT /api/auth/me bez kontekstu auth → 400")
+	void updateMe_withoutAuth_returns400() throws Exception {
+		mockMvc.perform(put("/api/auth/me")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"firstName\":\"Jan\",\"lastName\":\"Kowalski\",\"email\":\"jan@example.com\"}"))
+				.andExpect(status().isBadRequest());
 	}
 }

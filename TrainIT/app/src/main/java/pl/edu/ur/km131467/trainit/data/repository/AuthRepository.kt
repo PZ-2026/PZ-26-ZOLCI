@@ -8,6 +8,7 @@ import pl.edu.ur.km131467.trainit.data.remote.dto.ForgotPasswordRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.LoginResponseDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.RegisterRequestDto
+import pl.edu.ur.km131467.trainit.data.remote.dto.UpdateProfileRequestDto
 import pl.edu.ur.km131467.trainit.data.remote.dto.UserDto
 import retrofit2.Response
 import java.io.IOException
@@ -54,6 +55,30 @@ class AuthRepository(
             } else {
                 AuthResult.Error(parseErrorBody(response.code(), response.errorBody()?.string()))
             }
+        } catch (e: IOException) {
+            AuthResult.NetworkError
+        } catch (e: SerializationException) {
+            AuthResult.Error("Nieoczekiwany błąd: ${e.message}")
+        } catch (e: Exception) {
+            AuthResult.Error("Nieoczekiwany błąd: ${e.message}")
+        }
+    }
+
+    suspend fun getMe(token: String): AuthResult<UserDto> {
+        return try {
+            mapResponse(authApi.getMe("Bearer $token"))
+        } catch (e: IOException) {
+            AuthResult.NetworkError
+        } catch (e: SerializationException) {
+            AuthResult.Error("Nieoczekiwany błąd: ${e.message}")
+        } catch (e: Exception) {
+            AuthResult.Error("Nieoczekiwany błąd: ${e.message}")
+        }
+    }
+
+    suspend fun updateMe(token: String, request: UpdateProfileRequestDto): AuthResult<UserDto> {
+        return try {
+            mapResponse(authApi.updateMe("Bearer $token", request))
         } catch (e: IOException) {
             AuthResult.NetworkError
         } catch (e: SerializationException) {
