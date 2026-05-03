@@ -39,6 +39,14 @@ class FeatureViewModel(
     /** Publiczny strumień komunikatów UI. */
     val messages: SharedFlow<String> = _messages.asSharedFlow()
 
+    /** Opcjonalny identyfikator użytkownika do filtrowania (admin/trainer). */
+    private var targetUserId: Int? = null
+
+    /** Ustawia identyfikator użytkownika do filtrowania i wyłącza globalny widok. */
+    fun setTargetUserId(id: Int?) {
+        targetUserId = id
+    }
+
     /**
      * Ładuje dane wybranego modułu i publikuje odpowiedni stan UI.
      *
@@ -48,7 +56,7 @@ class FeatureViewModel(
         viewModelScope.launch {
             _uiState.value = FeatureUiState.Loading
             runCatching {
-                featureRepository.getItems(module, sessionManager)
+                featureRepository.getItems(module, sessionManager, targetUserId)
             }.onSuccess {
                 _uiState.value = if (it.isEmpty()) {
                     FeatureUiState.Empty
@@ -70,7 +78,7 @@ class FeatureViewModel(
         viewModelScope.launch {
             _uiState.value = FeatureUiState.Loading
             runCatching {
-                featureRepository.runPrimaryAction(module, sessionManager)
+                featureRepository.runPrimaryAction(module, sessionManager, targetUserId)
             }.onSuccess { message ->
                 _messages.emit(message)
                 load(module)

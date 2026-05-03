@@ -458,6 +458,23 @@
                     app:strokeWidth="0dp" />
             </LinearLayout>
 
+            <!-- ===== ADMIN DASHBOARD BUTTON ===== -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenAdminDashboard"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:text="Panel administratora"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:backgroundTint="@color/accent_yellow"
+                app:cornerRadius="14dp"
+                app:strokeWidth="0dp"
+                app:icon="@drawable/ic_trending_up"
+                app:iconGravity="textStart"
+                app:iconTint="@color/black" />
+
             <!-- ===== LOGOUT BUTTON ===== -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"

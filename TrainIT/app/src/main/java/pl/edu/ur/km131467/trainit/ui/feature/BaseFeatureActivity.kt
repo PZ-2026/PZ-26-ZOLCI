@@ -49,7 +49,10 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
     open fun onFeatureItemClicked(item: FeatureListItem) = Unit
 
     /** ViewModel dostarczający stany danych do renderowania. */
-    private val viewModel: FeatureViewModel by viewModels()
+    protected val viewModel: FeatureViewModel by viewModels()
+
+    /** Opcjonalny identyfikator użytkownika do filtrowania (admin/trainer). */
+    protected open var targetUserId: Int? = null
 
     /** Nagłówek modułu. */
     private lateinit var tvModuleTitle: TextView
@@ -119,6 +122,7 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
         setupActions()
         observeState()
         observeMessages()
+        viewModel.setTargetUserId(targetUserId)
         viewModel.load(module)
     }
 
@@ -353,6 +357,27 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
     private fun stopSessionTimer() {
         timerRunnable?.let { timerHandler.removeCallbacks(it) }
         timerRunnable = null
+    }
+
+    /**
+     * Umożliwia podklasom dynamiczną zmianę tytułu nagłówka modułu.
+     */
+    protected fun setModuleTitle(title: String) {
+        tvModuleTitle.text = title
+    }
+
+    /**
+     * Umożliwia podklasom dynamiczną zmianę podtytułu nagłówka modułu.
+     */
+    protected fun setModuleSubtitle(subtitle: String) {
+        tvModuleSubtitle.text = subtitle
+    }
+
+    /**
+     * Umożliwia podklasom pokazanie/ukrycie przycisku akcji głównej.
+     */
+    protected fun setPrimaryActionVisible(visible: Boolean) {
+        btnPrimaryAction.visibility = if (visible) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     companion object {

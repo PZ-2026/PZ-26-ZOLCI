@@ -287,20 +287,21 @@ class FeatureRepository(
      *
      * @param module moduł ekranu, dla którego pobierane są dane.
      * @param sessionManager źródło roli użytkownika, używane w module panelu roli.
+     * @param targetUserId opcjonalny identyfikator użytkownika do filtrowania (admin/trainer).
      * @return lista pozycji do wyświetlenia.
      */
-    suspend fun getItems(module: FeatureModule, sessionManager: SessionManager): List<FeatureListItem> {
+    suspend fun getItems(module: FeatureModule, sessionManager: SessionManager, targetUserId: Int? = null): List<FeatureListItem> {
         val authHeader = buildAuthHeader(sessionManager)
-        val userId = sessionManager.getUserId()
+        val effectiveUserId = resolveEffectiveUserId(sessionManager, targetUserId)
         val remoteResponse = runCatching {
             when (module) {
-                FeatureModule.EXERCISES -> featureApi.getExercises(authHeader, userId)
-                FeatureModule.SESSIONS -> featureApi.getSessions(authHeader, userId)
-                FeatureModule.REPORTS -> featureApi.getReports(authHeader, userId)
-                FeatureModule.STATISTICS -> featureApi.getStatistics(authHeader, userId)
-                FeatureModule.SETTINGS -> featureApi.getSettings(authHeader, userId)
-                FeatureModule.NOTIFICATIONS -> featureApi.getNotifications(authHeader, userId)
-                FeatureModule.ROLE_PANEL -> featureApi.getWorkouts(authHeader, userId)
+                FeatureModule.EXERCISES -> featureApi.getExercises(authHeader, effectiveUserId)
+                FeatureModule.SESSIONS -> featureApi.getSessions(authHeader, effectiveUserId)
+                FeatureModule.REPORTS -> featureApi.getReports(authHeader, effectiveUserId)
+                FeatureModule.STATISTICS -> featureApi.getStatistics(authHeader, effectiveUserId)
+                FeatureModule.SETTINGS -> featureApi.getSettings(authHeader, effectiveUserId)
+                FeatureModule.NOTIFICATIONS -> featureApi.getNotifications(authHeader, effectiveUserId)
+                FeatureModule.ROLE_PANEL -> featureApi.getWorkouts(authHeader, effectiveUserId)
             }
         }.getOrElse { throwable ->
             throw IllegalStateException("Błąd połączenia z serwerem: ${throwable.message}", throwable)
@@ -316,7 +317,7 @@ class FeatureRepository(
      *
      * @return komunikat sukcesu do wyświetlenia użytkownikowi
      */
-    suspend fun runPrimaryAction(module: FeatureModule, sessionManager: SessionManager): String {
+    suspend fun runPrimaryAction(module: FeatureModule, sessionManager: SessionManager, targetUserId: Int? = null): String {
         val userId = sessionManager.getUserId() ?: throw IllegalArgumentException("Brak aktywnej sesji użytkownika")
         val authHeader = buildAuthHeader(sessionManager)
         return when (module) {
@@ -414,6 +415,19 @@ class FeatureRepository(
                 }
             }
         }
+    }
+
+    /**
+     * Rozwiązuje efektywny parametr `userId` dla zapytania API.
+     *
+     * Jeśli podano [targetUserId] (np. z panelu admina), zwraca go bezpośrednio.
+     * Dla ról ADMIN/TRAINER bez parametru zwraca `null`, co powoduje widok globalny.
+     * Dla zwykłego USER zwraca własny identyfikator.
+     */
+    private fun resolveEffectiveUserId(sessionManager: SessionManager, targetUserId: Int?): Int? {
+        if (targetUserId != null) return targetUserId
+        val role = sessionManager.getRole().uppercase()
+        return if (role == "ADMIN" || role == "TRAINER") null else sessionManager.getUserId()
     }
 
     /**
