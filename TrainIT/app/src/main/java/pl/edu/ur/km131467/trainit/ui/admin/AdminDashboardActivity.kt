@@ -5,12 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import pl.edu.ur.km131467.trainit.R
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
-import pl.edu.ur.km131467.trainit.ui.common.BottomNavHelper
 import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
 import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
 
@@ -23,9 +21,11 @@ import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
 class AdminDashboardActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
-    private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var tvAdminRoleBadge: android.widget.TextView
     private lateinit var etTargetUserId: TextInputEditText
+
+    private lateinit var btnLogout: MaterialButton
+    private lateinit var btnManageUsers: MaterialButton
 
     // Global buttons
     private lateinit var btnGlobalWorkouts: MaterialButton
@@ -34,7 +34,6 @@ class AdminDashboardActivity : AppCompatActivity() {
     private lateinit var btnGlobalStatistics: MaterialButton
     private lateinit var btnGlobalReports: MaterialButton
     private lateinit var btnGlobalSettings: MaterialButton
-    private lateinit var btnGlobalNotifications: MaterialButton
 
     // User buttons
     private lateinit var btnUserWorkouts: MaterialButton
@@ -56,16 +55,22 @@ class AdminDashboardActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_admin_dashboard)
         initViews()
+        btnLogout.setOnClickListener {
+            sessionManager.clearSession()
+            startActivity(Intent(this, pl.edu.ur.km131467.trainit.ui.login.LoginActivity::class.java))
+            finish()
+        }
         bindRoleBadge()
-        BottomNavHelper.setupBottomNav(bottomNavigation, this, R.id.nav_profile)
         setupGlobalButtons()
         setupUserButtons()
     }
 
     private fun initViews() {
-        bottomNavigation = findViewById(R.id.bottomNavigation)
         tvAdminRoleBadge = findViewById(R.id.tvAdminRoleBadge)
         etTargetUserId = findViewById(R.id.etTargetUserId)
+
+        btnLogout = findViewById(R.id.btnLogout)
+        btnManageUsers = findViewById(R.id.btnManageUsers)
 
         btnGlobalWorkouts = findViewById(R.id.btnGlobalWorkouts)
         btnGlobalExercises = findViewById(R.id.btnGlobalExercises)
@@ -73,7 +78,6 @@ class AdminDashboardActivity : AppCompatActivity() {
         btnGlobalStatistics = findViewById(R.id.btnGlobalStatistics)
         btnGlobalReports = findViewById(R.id.btnGlobalReports)
         btnGlobalSettings = findViewById(R.id.btnGlobalSettings)
-        btnGlobalNotifications = findViewById(R.id.btnGlobalNotifications)
 
         btnUserWorkouts = findViewById(R.id.btnUserWorkouts)
         btnUserExercises = findViewById(R.id.btnUserExercises)
@@ -95,6 +99,9 @@ class AdminDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupGlobalButtons() {
+        btnManageUsers.setOnClickListener {
+            startActivity(AdminUsersActivity.createIntent(this))
+        }
         btnGlobalWorkouts.setOnClickListener {
             startActivity(AdminGlobalModuleActivity.createIntent(this, FeatureModule.ROLE_PANEL))
         }
@@ -112,9 +119,6 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
         btnGlobalSettings.setOnClickListener {
             startActivity(AdminGlobalModuleActivity.createIntent(this, FeatureModule.SETTINGS))
-        }
-        btnGlobalNotifications.setOnClickListener {
-            startActivity(AdminGlobalModuleActivity.createIntent(this, FeatureModule.NOTIFICATIONS))
         }
     }
 

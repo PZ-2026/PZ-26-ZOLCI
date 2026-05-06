@@ -60,6 +60,28 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Wyloguj"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/logout_red"
+                app:cornerRadius="14dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageUsers"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="16dp"
+                android:text="Zarządzaj użytkownikami"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                android:backgroundTint="@color/accent_yellow"
+                app:cornerRadius="14dp"
+                app:strokeWidth="0dp" />
+
             <!-- ===== GLOBAL DATA SECTION ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -97,7 +119,7 @@
                     android:text="Wszystkie plany treningowe"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
                     app:strokeWidth="0dp" />
 
@@ -109,7 +131,7 @@
                     android:text="Wszystkie ćwiczenia"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
                     app:strokeWidth="0dp" />
 
@@ -121,7 +143,7 @@
                     android:text="Wszystkie sesje treningowe"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
                     app:strokeWidth="0dp" />
 
@@ -133,7 +155,7 @@
                     android:text="Statystyki globalne"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
                     app:strokeWidth="0dp" />
 
@@ -145,33 +167,19 @@
                     android:text="Wszystkie raporty"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
                     app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGlobalSettings"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Ustawienia domyślne"
-                    android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
-                    app:cornerRadius="14dp"
-                    app:strokeWidth="0dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnGlobalNotifications"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="8dp"
-                    android:text="Powiadomienia globalne"
-                    android:textAllCaps="false"
-                    android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
-                    app:cornerRadius="14dp"
-                    app:strokeWidth="0dp" />
+                    android:backgroundTint="@color/accent_yellow"
+                    app:cornerRadius="14dp" />
             </LinearLayout>
 
             <!-- ===== USER DATA SECTION ===== -->
@@ -227,11 +235,10 @@
                     android:layout_height="48dp"
                     android:text="Plany treningowe użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUserExercises"
@@ -240,11 +247,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Ćwiczenia użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUserSessions"
@@ -253,11 +259,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Sesje użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUserStatistics"
@@ -266,11 +271,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Statystyki użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUserReports"
@@ -279,11 +283,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Raporty użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUserSettings"
@@ -292,11 +295,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Ustawienia użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUserNotifications"
@@ -306,11 +308,10 @@
                     android:layout_marginBottom="16dp"
                     android:text="Powiadomienia użytkownika"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -321,6 +322,7 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:background="@color/bottom_nav_bg"
         app:itemIconTint="@color/bottom_nav_color_selector"
         app:itemTextColor="@color/bottom_nav_color_selector"

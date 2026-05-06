@@ -14,6 +14,8 @@ import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
  */
 class AdminGlobalModuleActivity : BaseFeatureActivity() {
 
+    override val isAdminView: Boolean = true
+
     override val module: FeatureModule by lazy {
         FeatureModule.valueOf(intent.getStringExtra(EXTRA_MODULE)!!)
     }

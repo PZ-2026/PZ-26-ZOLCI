@@ -13,10 +13,15 @@ import com.trainit.backend.entity.User;
  * @param firstName imię
  * @param lastName nazwisko
  * @param role nazwa roli z encji {@link com.trainit.backend.entity.Role}; może być {@code null}, jeśli brak powiązania
+ * @param isActive flaga aktywności konta; {@code true} gdy logowanie dozwolone
  * @see User
  * @see com.trainit.backend.service.AuthService#register(RegisterRequest)
  */
-public record UserResponse(Integer id, String email, String firstName, String lastName, String role) {
+public record UserResponse(Integer id, String email, String firstName, String lastName, String role, Boolean isActive) {
+
+	public UserResponse(Integer id, String email, String firstName, String lastName, String role) {
+		this(id, email, firstName, lastName, role, true);
+	}
 
 	/**
 	 * Buduje odpowiedź na podstawie zapisanej encji użytkownika.
@@ -28,6 +33,6 @@ public record UserResponse(Integer id, String email, String firstName, String la
 	 */
 	public static UserResponse fromEntity(User user) {
 		String roleName = user.getRole() != null ? user.getRole().getName() : null;
-		return new UserResponse(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), roleName);
+		return new UserResponse(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), roleName, user.getIsActive());
 	}
 }

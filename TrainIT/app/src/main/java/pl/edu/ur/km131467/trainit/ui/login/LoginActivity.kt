@@ -150,7 +150,13 @@ class LoginActivity : AppCompatActivity() {
                 loginViews.btnLogin.isEnabled = true
                 loginViews.btnRegister.isEnabled = true
                 loginViews.progressLoading.visibility = View.GONE
-                startActivity(Intent(this, MainActivity::class.java))
+                val sessionManager = pl.edu.ur.km131467.trainit.data.local.SessionManager(this)
+                val role = sessionManager.getRole().uppercase()
+                val destination = when (role) {
+                    "ADMIN", "TRAINER" -> pl.edu.ur.km131467.trainit.ui.admin.AdminDashboardActivity::class.java
+                    else -> pl.edu.ur.km131467.trainit.MainActivity::class.java
+                }
+                startActivity(Intent(this, destination))
                 finish()
             }
             is LoginUiState.Error -> {

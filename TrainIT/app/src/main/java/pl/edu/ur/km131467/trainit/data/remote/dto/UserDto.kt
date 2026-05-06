@@ -9,4 +9,5 @@ data class UserDto(
     val firstName: String,
     val lastName: String,
     val role: String,
+    val isActive: Boolean = true,
 )

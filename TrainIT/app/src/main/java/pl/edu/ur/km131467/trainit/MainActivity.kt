@@ -107,6 +107,12 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
+        val role = sessionManager.getRole().uppercase()
+        if (role == "ADMIN" || role == "TRAINER") {
+            startActivity(Intent(this, pl.edu.ur.km131467.trainit.ui.admin.AdminDashboardActivity::class.java))
+            finish()
+            return
+        }
 
         setContentView(R.layout.activity_home)
         ReminderScheduler.ensureScheduled(this)

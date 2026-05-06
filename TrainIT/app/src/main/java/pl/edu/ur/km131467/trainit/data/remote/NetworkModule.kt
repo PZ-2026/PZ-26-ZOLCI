@@ -6,6 +6,7 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pl.edu.ur.km131467.trainit.BuildConfig
+import pl.edu.ur.km131467.trainit.data.remote.api.AdminApi
 import pl.edu.ur.km131467.trainit.data.remote.api.AuthApi
 import pl.edu.ur.km131467.trainit.data.remote.api.FeatureApi
 import retrofit2.Retrofit
@@ -45,4 +46,5 @@ object NetworkModule {
 
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
     val featureApi: FeatureApi by lazy { retrofit.create(FeatureApi::class.java) }
+    val adminApi: AdminApi by lazy { retrofit.create(AdminApi::class.java) }
 }

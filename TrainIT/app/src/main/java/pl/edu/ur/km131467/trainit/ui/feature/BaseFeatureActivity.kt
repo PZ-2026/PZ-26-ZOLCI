@@ -45,6 +45,8 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
     /** Włącza filtr grup mięśniowych (WF-15). */
     open val enableMuscleGroupFilter: Boolean = false
 
+    open val isAdminView: Boolean = false
+
     /** Opcjonalna akcja kliknięcia pozycji listy modułu (np. przejście do szczegółów). */
     open fun onFeatureItemClicked(item: FeatureListItem) = Unit
 
@@ -119,6 +121,9 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
         initViews()
         bindStaticTexts()
         BottomNavHelper.setupBottomNav(bottomNavigation, this, bottomNavItem)
+        if (isAdminView) {
+            bottomNavigation.visibility = android.view.View.GONE
+        }
         setupActions()
         observeState()
         observeMessages()
