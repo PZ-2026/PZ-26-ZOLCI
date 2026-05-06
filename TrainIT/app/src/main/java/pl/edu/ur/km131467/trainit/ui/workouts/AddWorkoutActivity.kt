@@ -36,6 +36,12 @@ class AddWorkoutActivity : AppCompatActivity() {
             return if (id > 0) id else null
         }
 
+    private val targetUserId: Int?
+        get() {
+            val id = intent.getIntExtra(EXTRA_TARGET_USER_ID, -1)
+            return if (id > 0) id else null
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_workout)
@@ -77,6 +83,8 @@ class AddWorkoutActivity : AppCompatActivity() {
                         finish()
                     }
             }
+        } else if (targetUserId != null) {
+            tvScreenTitle.text = "Utwórz plan dla klienta"
         }
     }
 
@@ -131,6 +139,7 @@ class AddWorkoutActivity : AppCompatActivity() {
                             description = descriptionRaw.ifBlank { "Dodane z aplikacji mobilnej" },
                             difficultyLevel = level,
                             estimatedDuration = duration,
+                            targetUserId = targetUserId,
                         )
                     }
                 } else {
@@ -175,5 +184,6 @@ class AddWorkoutActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_WORKOUT_ID = "extra_workout_id"
+        const val EXTRA_TARGET_USER_ID = "extra_target_user_id"
     }
 }

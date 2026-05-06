@@ -45,6 +45,8 @@
         <activity android:name=".ui.admin.AdminDashboardActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.admin.AdminGlobalModuleActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.admin.AdminUserModuleActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.admin.TrainerPanelActivity" android:theme="@style/Theme.TrainIT" />
+        <activity android:name=".ui.admin.TrainerClientResultsActivity" android:theme="@style/Theme.TrainIT" />
     </application>
 
 </manifest>

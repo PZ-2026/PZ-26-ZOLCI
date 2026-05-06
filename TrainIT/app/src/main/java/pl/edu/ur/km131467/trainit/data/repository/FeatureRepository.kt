@@ -102,6 +102,7 @@ class FeatureRepository(
     /**
      * Tworzy plan treningowy użytkownika z danymi z formularza UI.
      *
+     * @param targetUserId opcjonalny identyfikator klienta (trener tworzy plan w jego imieniu).
      * @return utworzony element listy planów
      */
     suspend fun createWorkoutForUser(
@@ -110,8 +111,10 @@ class FeatureRepository(
         description: String? = null,
         difficultyLevel: String = "ŚREDNI",
         estimatedDuration: Int = 60,
+        targetUserId: Int? = null,
     ): FeatureListItem {
-        val userId = sessionManager.getUserId() ?: throw IllegalArgumentException("Brak aktywnej sesji użytkownika")
+        val userId = targetUserId ?: sessionManager.getUserId()
+            ?: throw IllegalArgumentException("Brak aktywnej sesji użytkownika")
         val authHeader = buildAuthHeader(sessionManager)
         val response = featureApi.createWorkout(
             authHeader,
