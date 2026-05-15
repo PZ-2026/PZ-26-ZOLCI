@@ -153,7 +153,8 @@ class LoginActivity : AppCompatActivity() {
                 val sessionManager = pl.edu.ur.km131467.trainit.data.local.SessionManager(this)
                 val role = sessionManager.getRole().uppercase()
                 val destination = when (role) {
-                    "ADMIN", "TRAINER" -> pl.edu.ur.km131467.trainit.ui.admin.AdminDashboardActivity::class.java
+                    "ADMIN" -> pl.edu.ur.km131467.trainit.ui.admin.AdminDashboardActivity::class.java
+                    "TRAINER" -> pl.edu.ur.km131467.trainit.ui.admin.TrainerPanelActivity::class.java
                     else -> pl.edu.ur.km131467.trainit.MainActivity::class.java
                 }
                 startActivity(Intent(this, destination))

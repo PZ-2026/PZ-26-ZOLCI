@@ -4,12 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import pl.edu.ur.km131467.trainit.R
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
-import pl.edu.ur.km131467.trainit.ui.common.BottomNavHelper
 import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
 import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
 import pl.edu.ur.km131467.trainit.ui.workouts.AddWorkoutActivity
@@ -23,7 +21,7 @@ import pl.edu.ur.km131467.trainit.ui.workouts.AddWorkoutActivity
 class TrainerPanelActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
-    private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var btnLogout: MaterialButton
     private lateinit var etTargetUserId: TextInputEditText
 
     // Plans
@@ -54,14 +52,18 @@ class TrainerPanelActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_trainer_panel)
         initViews()
-        BottomNavHelper.setupBottomNav(bottomNavigation, this, R.id.nav_profile)
+        btnLogout.setOnClickListener {
+            sessionManager.clearSession()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
         setupPlanButtons()
         setupHistoryButtons()
         setupReportButtons()
     }
 
     private fun initViews() {
-        bottomNavigation = findViewById(R.id.bottomNavigation)
+        btnLogout = findViewById(R.id.btnLogout)
         etTargetUserId = findViewById(R.id.etTargetUserId)
 
         btnCreatePlanForClient = findViewById(R.id.btnCreatePlanForClient)

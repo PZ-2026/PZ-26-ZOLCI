@@ -108,8 +108,13 @@ class MainActivity : AppCompatActivity() {
             return
         }
         val role = sessionManager.getRole().uppercase()
-        if (role == "ADMIN" || role == "TRAINER") {
+        if (role == "ADMIN") {
             startActivity(Intent(this, pl.edu.ur.km131467.trainit.ui.admin.AdminDashboardActivity::class.java))
+            finish()
+            return
+        }
+        if (role == "TRAINER") {
+            startActivity(Intent(this, pl.edu.ur.km131467.trainit.ui.admin.TrainerPanelActivity::class.java))
             finish()
             return
         }

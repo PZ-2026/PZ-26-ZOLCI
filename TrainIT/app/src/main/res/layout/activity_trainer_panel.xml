@@ -126,11 +126,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Plany klienta"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAllPlans"
@@ -139,11 +138,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Wszystkie plany"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
             </LinearLayout>
 
             <!-- ===== HISTORY & RESULTS SECTION ===== -->
@@ -182,11 +180,10 @@
                     android:layout_height="48dp"
                     android:text="Historia klienta"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnClientResults"
@@ -195,11 +192,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Wyniki klienta"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAllSessions"
@@ -208,11 +204,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Wszystkie sesje"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
             </LinearLayout>
 
             <!-- ===== REPORTS & STATS SECTION ===== -->
@@ -251,11 +246,10 @@
                     android:layout_height="48dp"
                     android:text="Raporty klienta"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGlobalReports"
@@ -264,11 +258,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Raporty globalne"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnClientStatistics"
@@ -277,11 +270,10 @@
                     android:layout_marginTop="8dp"
                     android:text="Statystyki klienta"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGlobalStatistics"
@@ -290,18 +282,16 @@
                     android:layout_marginTop="8dp"
                     android:text="Statystyki globalne"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/card_dark"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_yellow"
                     app:cornerRadius="14dp"
-                    app:strokeColor="@color/accent_yellow"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGenerateReport"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
                     android:text="Generuj raport"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
@@ -309,6 +299,17 @@
                     app:cornerRadius="14dp"
                     app:strokeWidth="0dp" />
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="Wyloguj"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/logout_red"
+                app:cornerRadius="14dp" />
 
         </LinearLayout>
     </ScrollView>
@@ -318,6 +319,7 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:background="@color/bottom_nav_bg"
         app:itemIconTint="@color/bottom_nav_color_selector"
         app:itemTextColor="@color/bottom_nav_color_selector"
