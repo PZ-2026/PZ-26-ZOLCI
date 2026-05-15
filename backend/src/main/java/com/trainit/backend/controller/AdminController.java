@@ -1,7 +1,6 @@
 package com.trainit.backend.controller;
 
 import com.trainit.backend.util.AppLog;
-
 import com.trainit.backend.dto.ChangeRoleRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.security.JwtPrincipal;
@@ -30,6 +29,7 @@ public class AdminController {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
+	/** Serwis operacji administracyjnych na użytkownikach. */
 	private final AdminService adminService;
 
 	/**

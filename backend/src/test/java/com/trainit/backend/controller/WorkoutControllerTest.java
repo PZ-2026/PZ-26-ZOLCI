@@ -39,6 +39,20 @@ class WorkoutControllerTest {
 	}
 
 	@Test
+	@DisplayName("getWorkout zwraca 200 i plan po id")
+	void getWorkoutReturnsOk() {
+		WorkoutDto dto = new WorkoutDto();
+		dto.setId(9);
+		dto.setName("Pull Day");
+		when(workoutService.getWorkout(9, 1)).thenReturn(dto);
+
+		ResponseEntity<WorkoutDto> response = controller.getWorkout(9);
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("Pull Day", response.getBody().getName());
+	}
+
+	@Test
 	@DisplayName("getUserWorkouts zwraca 200 i listę planów")
 	void getUserWorkoutsReturnsOk() {
 		WorkoutDto dto = new WorkoutDto();

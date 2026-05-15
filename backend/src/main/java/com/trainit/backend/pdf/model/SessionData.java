@@ -1,4 +1,4 @@
-package com.trainit.pdf.model;
+package com.trainit.backend.pdf.model;
 
 import java.util.ArrayList;
 import java.util.List;

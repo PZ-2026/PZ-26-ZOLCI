@@ -52,6 +52,35 @@ class WorkoutSessionControllerTest {
 	}
 
 	@Test
+	@DisplayName("getSession zwraca 200 i sesję po id")
+	void getSessionReturnsOk() {
+		WorkoutSessionDto dto = new WorkoutSessionDto();
+		dto.setId(8);
+		dto.setStatus("PLANNED");
+		when(workoutSessionService.getSession(8, 1)).thenReturn(dto);
+
+		ResponseEntity<WorkoutSessionDto> response = controller.getSession(8);
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(8, response.getBody().getId());
+	}
+
+	@Test
+	@DisplayName("getUserSessions z zakresem dat wywołuje metodę betweenDates")
+	void getUserSessionsWithDateRange() {
+		LocalDateTime start = LocalDateTime.of(2026, 5, 1, 0, 0);
+		LocalDateTime end = LocalDateTime.of(2026, 5, 31, 23, 59);
+		when(workoutSessionService.getSessionsBetweenDates(eq(1), eq(start), eq(end)))
+				.thenReturn(List.of(new WorkoutSessionDto()));
+
+		ResponseEntity<List<WorkoutSessionDto>> response = controller.getUserSessions(
+				null, start.toString(), end.toString());
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(1, response.getBody().size());
+	}
+
+	@Test
 	@DisplayName("getUserSessions z filtrem status wywołuje metodę status")
 	void getUserSessionsWithStatusFilter() {
 		when(workoutSessionService.getUserSessionsByStatus(1, "PLANNED")).thenReturn(List.of(new WorkoutSessionDto()));

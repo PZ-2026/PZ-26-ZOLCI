@@ -3,12 +3,13 @@ INSERT INTO roles (name) VALUES
                              ('ADMIN'),
                              ('TRAINER');
 
+-- Hasło wszystkich użytkowników: Test123!
 INSERT INTO users (email, password_hash, first_name, last_name, role_id, is_active, created_at)
 VALUES
-    ('jan.kowalski@test.com', 'hash123', 'Jan', 'Kowalski', 1, true, NOW()),
-    ('anna.nowak@test.com', 'hash123', 'Anna', 'Nowak', 1, true, NOW()),
-    ('admin@test.com', 'hash123', 'Admin', 'User', 2, true, NOW()),
-    ('trainer@test.com', 'hash123', 'Tomasz', 'Trener', 3, true, NOW());
+    ('jan.kowalski@test.com', '$2b$12$J/LftbuapAoeILliYUtxke3WFhZdibiBENPJ9qm.gLB44xVTSwMLa', 'Jan', 'Kowalski', 1, true, NOW()),
+    ('anna.nowak@test.com',   '$2b$12$J/LftbuapAoeILliYUtxke3WFhZdibiBENPJ9qm.gLB44xVTSwMLa', 'Anna', 'Nowak', 1, true, NOW()),
+    ('admin@test.com',        '$2b$12$J/LftbuapAoeILliYUtxke3WFhZdibiBENPJ9qm.gLB44xVTSwMLa', 'Admin', 'User', 2, true, NOW()),
+    ('trainer@test.com',      '$2b$12$J/LftbuapAoeILliYUtxke3WFhZdibiBENPJ9qm.gLB44xVTSwMLa', 'Tomasz', 'Trener', 3, true, NOW());
 
 INSERT INTO exercises (name, muscle_group, description, is_custom, created_by)
 VALUES

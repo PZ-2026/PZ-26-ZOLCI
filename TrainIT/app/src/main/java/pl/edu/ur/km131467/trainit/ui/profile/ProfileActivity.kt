@@ -20,11 +20,8 @@ import pl.edu.ur.km131467.trainit.data.repository.AuthRepository
 import pl.edu.ur.km131467.trainit.data.repository.AuthResult
 import pl.edu.ur.km131467.trainit.data.repository.FeatureRepository
 import pl.edu.ur.km131467.trainit.ui.common.BottomNavHelper
-import pl.edu.ur.km131467.trainit.ui.admin.AdminDashboardActivity
-import pl.edu.ur.km131467.trainit.ui.admin.TrainerPanelActivity
 import pl.edu.ur.km131467.trainit.ui.feature.NotificationsActivity
 import pl.edu.ur.km131467.trainit.ui.feature.ReportsActivity
-import pl.edu.ur.km131467.trainit.ui.feature.RolePanelActivity
 import pl.edu.ur.km131467.trainit.ui.feature.SettingsActivity
 import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
 
@@ -57,8 +54,6 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var btnOpenSettings: MaterialButton
     /** Skrót do modułu powiadomień. */
     private lateinit var btnOpenNotifications: MaterialButton
-    /** Skrót do ekranu panelu roli / administratora / trenera. */
-    private lateinit var btnOpenRolePanel: MaterialButton
 
     /** Kontener na słupki wykresu aktywności tygodniowej. */
     private lateinit var chartBarsContainer: LinearLayout
@@ -122,7 +117,6 @@ class ProfileActivity : AppCompatActivity() {
         btnOpenReports = findViewById(R.id.btnOpenReports)
         btnOpenSettings = findViewById(R.id.btnOpenSettings)
         btnOpenNotifications = findViewById(R.id.btnOpenNotifications)
-        btnOpenRolePanel = findViewById(R.id.btnOpenRolePanel)
         chartBarsContainer = findViewById(R.id.chartBarsContainer)
         chartDaysContainer = findViewById(R.id.chartDaysContainer)
         recordsContainer = findViewById(R.id.recordsContainer)
@@ -135,34 +129,11 @@ class ProfileActivity : AppCompatActivity() {
         tvMemberSince.setOnClickListener { showEditProfileDialog() }
     }
 
-    /**
-     * Konfiguruje skróty nawigacyjne do dodatkowych modułów.
-     *
-     * Przycisk panelu roli jest dopasowany do roli:
-     * - ADMIN → "Panel administratora" → AdminDashboardActivity
-     * - TRAINER → "Panel trenera" → RolePanelActivity (placeholder dla przyszłego TrainerPanelActivity)
-     * - USER → przycisk nieaktywny
-     */
+    /** Konfiguruje skróty nawigacyjne do dodatkowych modułów. */
     private fun setupFeatureShortcuts() {
         btnOpenReports.setOnClickListener { startActivity(Intent(this, ReportsActivity::class.java)) }
         btnOpenSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         btnOpenNotifications.setOnClickListener { startActivity(Intent(this, NotificationsActivity::class.java)) }
-        when (sessionManager.getRole().uppercase()) {
-            "ADMIN" -> {
-                btnOpenRolePanel.setOnClickListener {
-                    startActivity(Intent(this, AdminDashboardActivity::class.java))
-                }
-            }
-            "TRAINER" -> {
-                btnOpenRolePanel.setOnClickListener {
-                    startActivity(Intent(this, TrainerPanelActivity::class.java))
-                }
-            }
-            else -> {
-                btnOpenRolePanel.isEnabled = false
-                btnOpenRolePanel.alpha = 0.5f
-            }
-        }
     }
 
     /**

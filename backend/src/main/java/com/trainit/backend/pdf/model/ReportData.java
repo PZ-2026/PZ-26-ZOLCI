@@ -1,4 +1,4 @@
-package com.trainit.pdf.model;
+package com.trainit.backend.pdf.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,10 +7,10 @@ import java.util.List;
  * Model danych wejściowych do wygenerowania raportu PDF aktywności treningowej.
  *
  * <p>Agreguje metadane raportu (użytkownik, typ, zakres dat) oraz listę sesji
- * treningowych ({@link SessionData}). Przekazywany do {@link com.trainit.pdf.service.PdfReportService}.
+ * treningowych ({@link SessionData}). Przekazywany do {@link com.trainit.backend.pdf.service.PdfReportService}.
  *
  * @see SessionData
- * @see com.trainit.pdf.service.PdfReportService
+ * @see com.trainit.backend.pdf.service.PdfReportService
  */
 public class ReportData {
 

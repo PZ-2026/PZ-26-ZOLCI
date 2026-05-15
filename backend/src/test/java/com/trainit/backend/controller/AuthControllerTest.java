@@ -4,7 +4,9 @@ import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
 import com.trainit.backend.dto.ForgotPasswordRequest;
 import com.trainit.backend.dto.RegisterRequest;
+import com.trainit.backend.dto.UpdateProfileRequest;
 import com.trainit.backend.dto.UserResponse;
+import com.trainit.backend.security.JwtPrincipal;
 import com.trainit.backend.exception.EmailAlreadyExistsException;
 import com.trainit.backend.exception.GlobalExceptionHandler;
 import com.trainit.backend.exception.InvalidCredentialsException;
@@ -16,11 +18,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -48,6 +57,9 @@ class AuthControllerTest {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private AuthController authController;
 
 	@MockitoBean
 	private AuthService authService;
@@ -83,6 +95,21 @@ class AuthControllerTest {
 		req.setEmail("jan@example.com");
 		req.setNewPassword("NoweHaslo123!");
 		return req;
+	}
+
+	private static UpdateProfileRequest updateProfileRequest() {
+		UpdateProfileRequest req = new UpdateProfileRequest();
+		req.setFirstName("Jan");
+		req.setLastName("Kowalski");
+		req.setEmail("jan@example.com");
+		return req;
+	}
+
+	private static Authentication jwtAuthentication(int userId) {
+		return new UsernamePasswordAuthenticationToken(
+				new JwtPrincipal(userId, "jan@example.com", "USER"),
+				null
+		);
 	}
 
 	@Test
@@ -246,11 +273,45 @@ class AuthControllerTest {
 	}
 
 	@Test
+	@DisplayName("GET /api/auth/me z JwtPrincipal → 200 + profil")
+	void me_withJwtPrincipal_returns200() {
+		UserResponse profile = new UserResponse(5, "jan@example.com", "Jan", "Kowalski", "USER");
+		when(authService.getProfile(5)).thenReturn(profile);
+
+		ResponseEntity<UserResponse> response = authController.me(jwtAuthentication(5));
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(5, response.getBody().id());
+		assertEquals("jan@example.com", response.getBody().email());
+	}
+
+	@Test
+	@DisplayName("GET /api/auth/me z niepoprawnym principal → IllegalArgumentException")
+	void me_withInvalidPrincipal_throws() {
+		Authentication invalid = new UsernamePasswordAuthenticationToken("anonymous", null);
+
+		assertThrows(IllegalArgumentException.class, () -> authController.me(invalid));
+	}
+
+	@Test
 	@DisplayName("PUT /api/auth/me bez kontekstu auth → 400")
 	void updateMe_withoutAuth_returns400() throws Exception {
 		mockMvc.perform(put("/api/auth/me")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"firstName\":\"Jan\",\"lastName\":\"Kowalski\",\"email\":\"jan@example.com\"}"))
+						.content(objectMapper.writeValueAsString(updateProfileRequest())))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("PUT /api/auth/me z JwtPrincipal → 200 + zaktualizowany profil")
+	void updateMe_withJwtPrincipal_returns200() {
+		UserResponse updated = new UserResponse(3, "jan@example.com", "Jan", "Nowak", "USER");
+		when(authService.updateProfile(eq(3), any(UpdateProfileRequest.class))).thenReturn(updated);
+
+		ResponseEntity<UserResponse> response = authController.updateMe(
+				updateProfileRequest(), jwtAuthentication(3));
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("Nowak", response.getBody().lastName());
 	}
 }

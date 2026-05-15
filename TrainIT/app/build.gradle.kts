@@ -1,7 +1,14 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+}
+
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -24,14 +31,15 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
+            val debugUrl = localProps.getProperty("PRODUCTION_BASE_URL")
+                ?: System.getenv("PRODUCTION_BASE_URL")
+                ?: "http://10.0.2.2:8080/"
+            buildConfigField("String", "BASE_URL", "\"$debugUrl\"")
         }
         release {
-            // Ustaw PRODUCTION_BASE_URL w local.properties lub jako zmienną środowiskową
-            // Przykład w local.properties:  PRODUCTION_BASE_URL=http://123.456.78.9:8080/
-            val productionUrl = (project.findProperty("PRODUCTION_BASE_URL")
+            val productionUrl = localProps.getProperty("PRODUCTION_BASE_URL")
                 ?: System.getenv("PRODUCTION_BASE_URL")
-                ?: "http://WSTAW_IP_SERWERA:8080/") as String
+                ?: "http://WSTAW_IP_SERWERA:8080/"
             buildConfigField("String", "BASE_URL", "\"$productionUrl\"")
             isMinifyEnabled = false
             proguardFiles(

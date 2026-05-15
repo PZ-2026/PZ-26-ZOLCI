@@ -25,7 +25,10 @@ public class ExerciseService {
 
 	private static final Logger log = LoggerFactory.getLogger(ExerciseService.class);
 
+	/** Repozytorium ćwiczeń w bazie danych. */
 	private final ExerciseRepository exerciseRepository;
+
+	/** Repozytorium użytkowników (weryfikacja właściciela ćwiczenia własnego). */
 	private final UserRepository userRepository;
 
 	/**

@@ -31,9 +31,16 @@ public class WorkoutService {
 
 	private static final Logger log = LoggerFactory.getLogger(WorkoutService.class);
 
+	/** Repozytorium planów treningowych. */
 	private final WorkoutRepository workoutRepository;
+
+	/** Repozytorium ćwiczeń przypisanych do planów. */
 	private final WorkoutExerciseRepository workoutExerciseRepository;
+
+	/** Repozytorium użytkowników (właściciel planu). */
 	private final UserRepository userRepository;
+
+	/** Repozytorium katalogu ćwiczeń. */
 	private final ExerciseRepository exerciseRepository;
 
 	/**

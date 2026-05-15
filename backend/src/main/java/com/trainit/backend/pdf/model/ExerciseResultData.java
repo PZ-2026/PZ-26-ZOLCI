@@ -1,4 +1,4 @@
-package com.trainit.pdf.model;
+package com.trainit.backend.pdf.model;
 
 /**
  * Model danych wyniku pojedynczego ćwiczenia w sesji treningowej do generowania raportu PDF.
@@ -7,7 +7,7 @@ package com.trainit.pdf.model;
  * i notatki użytkownika. Używany przez {@link SessionData} jako element listy wyników.
  *
  * @see SessionData
- * @see com.trainit.pdf.service.PdfReportService
+ * @see com.trainit.backend.pdf.service.PdfReportService
  */
 public class ExerciseResultData {
 

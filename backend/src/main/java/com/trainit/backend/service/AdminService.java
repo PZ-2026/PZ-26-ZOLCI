@@ -33,14 +33,28 @@ public class AdminService {
 
 	private static final String SELF_OPERATION_ERROR = "Nie możesz wykonać tej operacji na własnym koncie";
 
+	/** Repozytorium kont użytkowników. */
 	private final UserRepository userRepository;
+
+	/** Repozytorium ról systemowych. */
 	private final RoleRepository roleRepository;
+
+	/** Repozytorium planów treningowych. */
 	private final WorkoutRepository workoutRepository;
+
+	/** Repozytorium powiązań ćwiczeń z planami. */
 	private final WorkoutExerciseRepository workoutExerciseRepository;
+
+	/** Repozytorium sesji treningowych. */
 	private final WorkoutSessionRepository workoutSessionRepository;
+
+	/** Repozytorium wyników ćwiczeń w sesjach. */
 	private final ExerciseResultRepository exerciseResultRepository;
+
+	/** Repozytorium ćwiczeń. */
 	private final ExerciseRepository exerciseRepository;
 
+	/** Kontekst JPA do operacji kaskadowego usuwania danych użytkownika. */
 	@PersistenceContext
 	private EntityManager entityManager;
 

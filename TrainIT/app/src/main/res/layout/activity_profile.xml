@@ -426,37 +426,17 @@
                     app:strokeWidth="0dp" />
             </LinearLayout>
 
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenNotifications"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnOpenNotifications"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="Powiadomienia"
-                    android:textAllCaps="false"
-                    android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
-                    app:cornerRadius="14dp"
-                    app:strokeWidth="0dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnOpenRolePanel"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:text="Panel roli"
-                    android:textAllCaps="false"
-                    android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_yellow"
-                    app:cornerRadius="14dp"
-                    app:strokeWidth="0dp" />
-            </LinearLayout>
+                android:text="Powiadomienia"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                app:backgroundTint="@color/accent_yellow"
+                app:cornerRadius="14dp"
+                app:strokeWidth="0dp" />
 
             <!-- ===== LOGOUT BUTTON ===== -->
             <com.google.android.material.button.MaterialButton

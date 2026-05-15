@@ -41,8 +41,7 @@
         <activity android:name=".ui.feature.StatisticsActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.feature.SettingsActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.feature.NotificationsActivity" android:theme="@style/Theme.TrainIT" />
-        <activity android:name=".ui.feature.RolePanelActivity" android:theme="@style/Theme.TrainIT" />
-        <activity android:name=".ui.admin.AdminDashboardActivity" android:theme="@style/Theme.TrainIT" />
+<activity android:name=".ui.admin.AdminDashboardActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.admin.AdminGlobalModuleActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.admin.AdminUserModuleActivity" android:theme="@style/Theme.TrainIT" />
         <activity android:name=".ui.admin.TrainerPanelActivity" android:theme="@style/Theme.TrainIT" />

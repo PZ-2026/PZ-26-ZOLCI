@@ -35,10 +35,19 @@ public class WorkoutSessionService {
 
 	private static final Logger log = LoggerFactory.getLogger(WorkoutSessionService.class);
 
+	/** Repozytorium sesji treningowych. */
 	private final WorkoutSessionRepository workoutSessionRepository;
+
+	/** Repozytorium planów treningowych powiązanych z sesją. */
 	private final WorkoutRepository workoutRepository;
+
+	/** Repozytorium użytkowników (właściciel sesji). */
 	private final UserRepository userRepository;
+
+	/** Repozytorium ćwiczeń (wyniki w sesji). */
 	private final ExerciseRepository exerciseRepository;
+
+	/** Repozytorium wyników ćwiczeń w sesjach. */
 	private final ExerciseResultRepository exerciseResultRepository;
 
 	/**

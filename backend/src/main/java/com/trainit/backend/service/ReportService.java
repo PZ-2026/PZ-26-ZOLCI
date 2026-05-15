@@ -1,10 +1,10 @@
 package com.trainit.backend.service;
 
 import com.trainit.backend.util.AppLog;
-import com.trainit.pdf.model.ExerciseResultData;
-import com.trainit.pdf.model.ReportData;
-import com.trainit.pdf.model.SessionData;
-import com.trainit.pdf.service.PdfReportService;
+import com.trainit.backend.pdf.model.ExerciseResultData;
+import com.trainit.backend.pdf.model.ReportData;
+import com.trainit.backend.pdf.model.SessionData;
+import com.trainit.backend.pdf.service.PdfReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -28,6 +28,7 @@ public class ReportService {
 
 	private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+	/** Szablon JDBC do odczytu danych raportu z PostgreSQL. */
 	private final JdbcTemplate jdbcTemplate;
 
 	/**

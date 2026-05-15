@@ -1,7 +1,6 @@
 package com.trainit.backend.controller;
 
 import com.trainit.backend.util.AppLog;
-
 import com.trainit.backend.dto.CreateExerciseRequest;
 import com.trainit.backend.dto.CreateWorkoutRequest;
 import com.trainit.backend.dto.ExerciseResultRequest;

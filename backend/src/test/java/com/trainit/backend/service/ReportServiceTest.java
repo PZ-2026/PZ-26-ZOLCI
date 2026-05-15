@@ -1,7 +1,7 @@
 package com.trainit.backend.service;
 
-import com.trainit.pdf.model.ExerciseResultData;
-import com.trainit.pdf.model.SessionData;
+import com.trainit.backend.pdf.model.ExerciseResultData;
+import com.trainit.backend.pdf.model.SessionData;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

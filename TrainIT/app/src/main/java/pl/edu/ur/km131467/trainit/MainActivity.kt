@@ -12,6 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
@@ -189,16 +190,18 @@ class MainActivity : AppCompatActivity() {
     private fun loadDashboardData() {
         lifecycleScope.launch {
             runCatching {
-                val statsDeferred = async { featureRepository.getItems(FeatureModule.STATISTICS, sessionManager) }
-                val sessionsDeferred = async { featureRepository.getItems(FeatureModule.SESSIONS, sessionManager) }
-                val settingsDeferred = async { featureRepository.getItems(FeatureModule.SETTINGS, sessionManager) }
-                val notificationsDeferred = async { featureRepository.getItems(FeatureModule.NOTIFICATIONS, sessionManager) }
-                DashboardPayload(
-                    stats = statsDeferred.await(),
-                    sessions = sessionsDeferred.await(),
-                    settings = settingsDeferred.await(),
-                    notifications = notificationsDeferred.await(),
-                )
+                supervisorScope {
+                    val statsDeferred = async { featureRepository.getItems(FeatureModule.STATISTICS, sessionManager) }
+                    val sessionsDeferred = async { featureRepository.getItems(FeatureModule.SESSIONS, sessionManager) }
+                    val settingsDeferred = async { featureRepository.getItems(FeatureModule.SETTINGS, sessionManager) }
+                    val notificationsDeferred = async { featureRepository.getItems(FeatureModule.NOTIFICATIONS, sessionManager) }
+                    DashboardPayload(
+                        stats = statsDeferred.await(),
+                        sessions = sessionsDeferred.await(),
+                        settings = settingsDeferred.await(),
+                        notifications = notificationsDeferred.await(),
+                    )
+                }
             }
                 .onSuccess { payload ->
                     val weekSessions = statValue(payload.stats, "Sesje w tym tygodniu")
@@ -230,8 +233,14 @@ class MainActivity : AppCompatActivity() {
                     bindRecentActivity(payload.sessions, completedSessions, totalSessions)
                     notifyGoalReachedIfNeeded(weekSessions, weeklyGoal)
                 }
-                .onFailure {
-                    tvWeeklyGoalHint.text = it.message ?: "Nie udało się pobrać statystyk"
+                .onFailure { error ->
+                    if (error.message?.contains("403") == true || error.message?.contains("401") == true) {
+                        sessionManager.clearSession()
+                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                        finish()
+                    } else {
+                        tvWeeklyGoalHint.text = error.message ?: "Nie udało się pobrać statystyk"
+                    }
                 }
         }
     }

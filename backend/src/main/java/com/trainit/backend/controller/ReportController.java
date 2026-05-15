@@ -23,6 +23,7 @@ public class ReportController {
 
 	private static final Logger log = LoggerFactory.getLogger(ReportController.class);
 
+	/** Serwis generowania raportów PDF. */
 	private final ReportService reportService;
 
 	/**

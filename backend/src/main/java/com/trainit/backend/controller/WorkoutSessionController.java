@@ -1,7 +1,6 @@
 package com.trainit.backend.controller;
 
 import com.trainit.backend.util.AppLog;
-
 import com.trainit.backend.dto.CompleteWorkoutSessionRequest;
 import com.trainit.backend.dto.CreateWorkoutSessionRequest;
 import com.trainit.backend.dto.WorkoutSessionDto;
@@ -33,6 +32,7 @@ public class WorkoutSessionController {
 
 	private static final Logger log = LoggerFactory.getLogger(WorkoutSessionController.class);
 
+	/** Serwis sesji treningowych użytkownika. */
 	private final WorkoutSessionService workoutSessionService;
 
 	/**

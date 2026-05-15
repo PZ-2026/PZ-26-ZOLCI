@@ -1,7 +1,6 @@
 package com.trainit.backend.controller;
 
 import com.trainit.backend.util.AppLog;
-
 import com.trainit.backend.dto.CreateExerciseRequest;
 import com.trainit.backend.dto.ExerciseDto;
 import com.trainit.backend.service.ExerciseService;
@@ -31,6 +30,7 @@ public class ExerciseController {
 
 	private static final Logger log = LoggerFactory.getLogger(ExerciseController.class);
 
+	/** Serwis warstwy biznesowej ćwiczeń. */
 	private final ExerciseService exerciseService;
 
 	/**

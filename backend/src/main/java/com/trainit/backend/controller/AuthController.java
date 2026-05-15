@@ -1,7 +1,6 @@
 package com.trainit.backend.controller;
 
 import com.trainit.backend.util.AppLog;
-
 import com.trainit.backend.dto.LoginRequest;
 import com.trainit.backend.dto.LoginResponse;
 import com.trainit.backend.dto.ForgotPasswordRequest;
@@ -32,6 +31,7 @@ public class AuthController {
 
 	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
+	/** Serwis uwierzytelniania i profilu użytkownika. */
 	private final AuthService authService;
 
 	/**

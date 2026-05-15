@@ -29,12 +29,16 @@ public class AuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
+	/** Repozytorium kont użytkowników. */
 	private final UserRepository userRepository;
 
+	/** Repozytorium ról systemowych. */
 	private final RoleRepository roleRepository;
 
+	/** Enkoder haseł BCrypt. */
 	private final BCryptPasswordEncoder passwordEncoder;
 
+	/** Generator i walidator tokenów JWT. */
 	private final JwtService jwtService;
 
 	/**
