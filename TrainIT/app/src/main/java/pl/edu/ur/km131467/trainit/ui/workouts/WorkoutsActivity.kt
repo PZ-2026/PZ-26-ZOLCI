@@ -58,8 +58,6 @@ class WorkoutsActivity : AppCompatActivity() {
     private var hasActiveSession: Boolean = false
     private var latestSession: FeatureListItem? = null
     private var activeSession: FeatureListItem? = null
-    private var activePlanDurationMinutes: Int? = null
-    private var autoStopInProgress: Boolean = false
 
     private lateinit var tvSessionOverviewTitle: TextView
     private lateinit var tvSessionOverviewSubtitle: TextView
@@ -136,11 +134,7 @@ class WorkoutsActivity : AppCompatActivity() {
                     allWorkouts = workouts
                     latestSession = sessions.firstOrNull()
                     activeSession = sessions.firstOrNull { it.subtitle.contains("ZAPLANOWANE", ignoreCase = true) }
-                    hasActiveSession = sessions.any { it.subtitle.contains("ZAPLANOWANE", ignoreCase = true) }
-                    activePlanDurationMinutes = resolveActivePlanDurationMinutes(activeSession, workouts)
-                    if (!hasActiveSession) {
-                        autoStopInProgress = false
-                    }
+                    hasActiveSession = activeSession != null
                     renderSessionOverview()
                     applySearchFilter()
                 }
@@ -188,16 +182,16 @@ class WorkoutsActivity : AppCompatActivity() {
         )
     }
 
+    /** Uruchamia sekundnik aktywnej sesji w bloku podsumowania nad listą planów. */
+    override fun onStart() {
+        super.onStart()
+        if (hasActiveSession) startOverviewTimer()
+    }
+
+    /** Zatrzymuje sekundnik przy opuszczeniu ekranu (oszczędność zasobów). */
     override fun onStop() {
         super.onStop()
         stopOverviewTimer()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (hasActiveSession) {
-            startOverviewTimer()
-        }
     }
 
     /** Uruchamia sesję treningową dla wybranego planu. */
@@ -212,7 +206,6 @@ class WorkoutsActivity : AppCompatActivity() {
                 .onSuccess {
                     sessionManager.setActiveSessionStartedAt(System.currentTimeMillis())
                     hasActiveSession = true
-                    autoStopInProgress = false
                     renderSessionOverview()
                     applySearchFilter()
                     loadWorkouts()
@@ -273,7 +266,6 @@ class WorkoutsActivity : AppCompatActivity() {
                     runCatching { featureRepository.stopActiveSession(sessionManager) }
                         .onSuccess {
                             hasActiveSession = false
-                            autoStopInProgress = false
                             renderSessionOverview()
                             applySearchFilter()
                             loadWorkouts()
@@ -291,7 +283,7 @@ class WorkoutsActivity : AppCompatActivity() {
             .show()
     }
 
-    /** Renderuje czytelny status aktywnej/ostatniej sesji nad listą planów. */
+    /** Renderuje status aktywnej/ostatniej sesji nad listą planów. */
     private fun renderSessionOverview() {
         if (hasActiveSession) {
             tvSessionOverviewTitle.text = "Sesja aktywna"
@@ -301,75 +293,35 @@ class WorkoutsActivity : AppCompatActivity() {
             tvSessionOverviewTitle.text = "Brak aktywnej sesji"
             val last = latestSession
             tvSessionOverviewSubtitle.text = if (last != null) {
-                "Ostatnia: ${last.title} - ${last.subtitle}"
+                "Ostatnia: ${last.title}"
             } else {
                 "Rozpocznij trening, aby utworzyć pierwszą sesję."
             }
         }
     }
 
-    /** Aktualizuje sekundnik aktywnej sesji w bloku statusu. */
+    /** Uruchamia sekundnik aktywnej sesji w bloku statusu (bez auto-stopu). */
     private fun startOverviewTimer() {
-        val startedAt = sessionManager.getActiveSessionStartedAt() ?: return
+        val startedAt = sessionManager.getActiveSessionStartedAt() ?: run {
+            tvSessionOverviewSubtitle.text = activeSession?.title ?: "Sesja w toku"
+            return
+        }
         stopOverviewTimer()
         timerRunnable = object : Runnable {
             override fun run() {
                 val elapsedSeconds = ((System.currentTimeMillis() - startedAt) / 1000).coerceAtLeast(0)
-                val minutes = elapsedSeconds / 60
+                val hours = elapsedSeconds / 3600
+                val minutes = (elapsedSeconds % 3600) / 60
                 val seconds = elapsedSeconds % 60
-                tvSessionOverviewSubtitle.text = String.format("Czas trwania: %02d:%02d", minutes, seconds)
-                val planSeconds = activePlanDurationMinutes?.times(60)
-                if (!autoStopInProgress && planSeconds != null && elapsedSeconds >= planSeconds) {
-                    autoStopInProgress = true
-                    autoStopActiveSessionAtPlanDuration()
-                    return
+                val timeStr = if (hours > 0) {
+                    String.format("%d:%02d:%02d", hours, minutes, seconds)
+                } else {
+                    String.format("%02d:%02d", minutes, seconds)
                 }
+                tvSessionOverviewSubtitle.text = "${activeSession?.title ?: "Sesja w toku"}  ·  $timeStr"
                 timerHandler.postDelayed(this, 1000L)
             }
         }.also { timerHandler.post(it) }
-    }
-
-    private fun autoStopActiveSessionAtPlanDuration() {
-        lifecycleScope.launch {
-            runCatching { featureRepository.stopActiveSession(sessionManager) }
-                .onSuccess {
-                    hasActiveSession = false
-                    autoStopInProgress = false
-                    Toast.makeText(
-                        this@WorkoutsActivity,
-                        "Sesja zakończona automatycznie po czasie planu",
-                        Toast.LENGTH_SHORT,
-                    ).show()
-                    renderSessionOverview()
-                    applySearchFilter()
-                    loadWorkouts()
-                }
-                .onFailure {
-                    autoStopInProgress = false
-                    Toast.makeText(
-                        this@WorkoutsActivity,
-                        it.message ?: "Nie udało się automatycznie zakończyć sesji",
-                        Toast.LENGTH_LONG,
-                    ).show()
-                    startOverviewTimer()
-                }
-        }
-    }
-
-    private fun resolveActivePlanDurationMinutes(
-        activeSessionItem: FeatureListItem?,
-        workouts: List<FeatureListItem>,
-    ): Int? {
-        val workoutName = extractWorkoutNameFromSessionTitle(activeSessionItem?.title ?: return null) ?: return null
-        val matchedWorkout = workouts.firstOrNull { it.title.equals(workoutName, ignoreCase = true) } ?: return null
-        val durationMatch = Regex("czas:\\s*(\\d+)\\s*min", RegexOption.IGNORE_CASE).find(matchedWorkout.subtitle)
-        return durationMatch?.groupValues?.getOrNull(1)?.toIntOrNull()
-    }
-
-    private fun extractWorkoutNameFromSessionTitle(title: String): String? {
-        val separatorIndex = title.indexOf(" - ")
-        if (separatorIndex < 0 || separatorIndex + 3 >= title.length) return null
-        return title.substring(separatorIndex + 3).trim().ifBlank { null }
     }
 
     private fun stopOverviewTimer() {

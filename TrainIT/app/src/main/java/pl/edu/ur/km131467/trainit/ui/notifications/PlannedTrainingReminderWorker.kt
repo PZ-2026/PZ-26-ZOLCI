@@ -10,6 +10,9 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * Worker WorkManager sprawdzający zaplanowane sesje i wysyłający przypomnienia.
+ */
 class PlannedTrainingReminderWorker(
     context: Context,
     params: WorkerParameters,

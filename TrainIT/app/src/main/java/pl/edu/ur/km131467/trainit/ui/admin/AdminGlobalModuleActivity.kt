@@ -22,6 +22,11 @@ class AdminGlobalModuleActivity : BaseFeatureActivity() {
 
     override val bottomNavItem: Int = pl.edu.ur.km131467.trainit.R.id.nav_profile
 
+    /**
+     * Konfiguruje nagłówek widoku globalnego i ukrywa akcję główną modułu.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setPrimaryActionVisible(false)

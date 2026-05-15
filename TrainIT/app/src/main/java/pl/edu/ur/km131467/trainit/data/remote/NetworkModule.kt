@@ -9,9 +9,13 @@ import pl.edu.ur.km131467.trainit.BuildConfig
 import pl.edu.ur.km131467.trainit.data.remote.api.AdminApi
 import pl.edu.ur.km131467.trainit.data.remote.api.AuthApi
 import pl.edu.ur.km131467.trainit.data.remote.api.FeatureApi
+import pl.edu.ur.km131467.trainit.data.remote.api.ReportApi
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
+/**
+ * Fabryka klientów Retrofit i instancji API modułów TrainIT.
+ */
 object NetworkModule {
 
     val json: Json by lazy {
@@ -47,4 +51,5 @@ object NetworkModule {
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
     val featureApi: FeatureApi by lazy { retrofit.create(FeatureApi::class.java) }
     val adminApi: AdminApi by lazy { retrofit.create(AdminApi::class.java) }
+    val reportApi: ReportApi by lazy { retrofit.create(ReportApi::class.java) }
 }

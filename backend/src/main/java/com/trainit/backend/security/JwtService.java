@@ -19,10 +19,16 @@ import java.util.UUID;
 @Service
 public class JwtService {
 
+	/** Algorytm HMAC używany do podpisu tokenów JWT. */
 	private static final String HMAC_ALGORITHM = "HmacSHA256";
+
+	/** Zakodowany nagłówek JWT (alg HS256, typ JWT). */
 	private static final String HEADER = base64Url("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
 
+	/** Tajny klucz podpisu tokenów z konfiguracji aplikacji. */
 	private final String secret;
+
+	/** Czas ważności wydawanego tokena w sekundach. */
 	private final long expirationSeconds;
 
 	/**

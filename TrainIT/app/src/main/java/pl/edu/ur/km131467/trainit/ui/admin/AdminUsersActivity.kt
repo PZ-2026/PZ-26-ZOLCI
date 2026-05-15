@@ -20,6 +20,9 @@ import pl.edu.ur.km131467.trainit.data.local.SessionManager
 import pl.edu.ur.km131467.trainit.data.remote.dto.UserDto
 import pl.edu.ur.km131467.trainit.data.repository.AdminRepository
 
+/**
+ * Ekran listy użytkowników z możliwością zmiany roli, blokady i usuwania.
+ */
 class AdminUsersActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
@@ -30,6 +33,11 @@ class AdminUsersActivity : AppCompatActivity() {
 
     private val adapter = UsersAdapter()
 
+    /**
+     * Inicjalizuje listę użytkowników i uruchamia pierwsze pobranie danych z API.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sessionManager = SessionManager(this)

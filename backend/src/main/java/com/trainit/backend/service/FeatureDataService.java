@@ -1,5 +1,7 @@
 package com.trainit.backend.service;
 
+import com.trainit.backend.util.AppLog;
+
 import com.trainit.backend.dto.FeatureItemResponse;
 import com.trainit.backend.dto.CreateExerciseRequest;
 import com.trainit.backend.dto.CreateWorkoutRequest;
@@ -12,6 +14,8 @@ import com.trainit.backend.dto.UpdateSettingRequest;
 import com.trainit.backend.dto.WorkoutExerciseRequest;
 import com.trainit.backend.dto.WorkoutExerciseLineResponse;
 import com.trainit.backend.dto.WorkoutPlanDetailResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -39,6 +43,8 @@ import java.util.Map;
 @Service
 public class FeatureDataService {
 
+	private static final Logger log = LoggerFactory.getLogger(FeatureDataService.class);
+
 	/** Narzędzie JDBC do wykonywania zapytań SQL bezpośrednio na bazie. */
 	private final JdbcTemplate jdbcTemplate;
 
@@ -55,11 +61,13 @@ public class FeatureDataService {
 	/**
 	 * Zwraca listę planów treningowych.
 	 *
+	 * @param userId identyfikator użytkownika lub null (wszystkie plany)
 	 * @return lista pozycji modułu treningów
 	 */
 	public List<FeatureItemResponse> getWorkouts(Integer userId) {
+		List<FeatureItemResponse> result;
 		if (userId == null) {
-			return jdbcTemplate.query(
+			result = jdbcTemplate.query(
 					"""
 					SELECT w.id AS id,
 					       w.name AS title,
@@ -74,29 +82,33 @@ public class FeatureDataService {
 							rs.getString("subtitle")
 					)
 			);
+		} else {
+			result = jdbcTemplate.query(
+					"""
+					SELECT w.id AS id,
+					       w.name AS title,
+					       ('Poziom: ' || COALESCE(w.difficulty_level, 'N/D') ||
+					        ', czas: ' || COALESCE(w.estimated_duration::text, '?') || ' min') AS subtitle
+					FROM workouts w
+					WHERE w.user_id = ?
+					ORDER BY w.id DESC
+					""",
+					(rs, rowNum) -> new FeatureItemResponse(
+							rs.getInt("id"),
+							rs.getString("title"),
+							rs.getString("subtitle")
+					),
+					userId
+			);
 		}
-		return jdbcTemplate.query(
-				"""
-				SELECT w.id AS id,
-				       w.name AS title,
-				       ('Poziom: ' || COALESCE(w.difficulty_level, 'N/D') ||
-				        ', czas: ' || COALESCE(w.estimated_duration::text, '?') || ' min') AS subtitle
-				FROM workouts w
-				WHERE w.user_id = ?
-				ORDER BY w.id DESC
-				""",
-				(rs, rowNum) -> new FeatureItemResponse(
-						rs.getInt("id"),
-						rs.getString("title"),
-						rs.getString("subtitle")
-				),
-				userId
-		);
+		AppLog.success(log, "Pobrano plany treningowe (feature), userId={}, liczba={}", userId, result.size());
+		return result;
 	}
 
 	/**
 	 * Zwraca listę ćwiczeń.
 	 *
+	 * @param userId identyfikator użytkownika lub null (wszystkie ćwiczenia)
 	 * @return lista pozycji modułu ćwiczeń
 	 */
 	public List<FeatureItemResponse> getExercises(Integer userId) {
@@ -239,9 +251,10 @@ public class FeatureDataService {
 		}, keyHolder);
 		Integer resultId = extractGeneratedId(keyHolder);
 		if (resultId == null) {
+			log.error("Nie udało się odczytać id zapisanego wyniku ćwiczenia, sessionId={}", sessionId);
 			throw new IllegalStateException("Nie udało się odczytać id zapisanego wyniku");
 		}
-		return jdbcTemplate.queryForObject(
+		SessionExerciseResultResponse response = jdbcTemplate.queryForObject(
 				"""
 				SELECT er.id AS id,
 				       e.id AS exercise_id,
@@ -258,10 +271,20 @@ public class FeatureDataService {
 				(rs, rowNum) -> mapSessionExerciseResultRow(rs),
 				resultId
 		);
+		AppLog.success(log, "Dodano wynik ćwiczenia do sesji, userId={}, sessionId={}, resultId={}",
+				authenticatedUserId, sessionId, resultId);
+		return response;
 	}
 
 	/**
 	 * Aktualizuje istniejący wynik ćwiczenia w sesji użytkownika.
+	 *
+	 * @param authenticatedUserId identyfikator użytkownika
+	 * @param sessionId identyfikator sesji
+	 * @param resultId identyfikator wyniku
+	 * @param request nowe dane wyniku
+	 * @return zaktualizowany wynik
+	 * @throws IllegalArgumentException gdy sesja, ćwiczenie lub wynik nie istnieje
 	 */
 	@Transactional
 	public SessionExerciseResultResponse updateSessionExerciseResult(
@@ -289,9 +312,10 @@ public class FeatureDataService {
 				sessionId
 		);
 		if (updated == 0) {
+			log.warn("Nie znaleziono wyniku ćwiczenia do aktualizacji, resultId={}, sessionId={}", resultId, sessionId);
 			throw new IllegalArgumentException("Nie znaleziono wyniku ćwiczenia o id=" + resultId);
 		}
-		return jdbcTemplate.queryForObject(
+		SessionExerciseResultResponse response = jdbcTemplate.queryForObject(
 				"""
 				SELECT er.id AS id,
 				       e.id AS exercise_id,
@@ -309,10 +333,18 @@ public class FeatureDataService {
 				resultId,
 				sessionId
 		);
+		AppLog.success(log, "Zaktualizowano wynik ćwiczenia w sesji, userId={}, sessionId={}, resultId={}",
+				authenticatedUserId, sessionId, resultId);
+		return response;
 	}
 
 	/**
 	 * Usuwa wynik ćwiczenia z sesji użytkownika.
+	 *
+	 * @param authenticatedUserId identyfikator użytkownika
+	 * @param sessionId identyfikator sesji
+	 * @param resultId identyfikator wyniku
+	 * @throws IllegalArgumentException gdy sesja lub wynik nie istnieje
 	 */
 	@Transactional
 	public void deleteSessionExerciseResult(Integer authenticatedUserId, Integer sessionId, Integer resultId) {
@@ -323,8 +355,11 @@ public class FeatureDataService {
 				sessionId
 		);
 		if (deleted == 0) {
+			log.warn("Nie znaleziono wyniku ćwiczenia do usunięcia, resultId={}, sessionId={}", resultId, sessionId);
 			throw new IllegalArgumentException("Nie znaleziono wyniku ćwiczenia o id=" + resultId);
 		}
+		AppLog.success(log, "Usunięto wynik ćwiczenia z sesji, userId={}, sessionId={}, resultId={}",
+				authenticatedUserId, sessionId, resultId);
 	}
 
 	/**
@@ -533,11 +568,21 @@ public class FeatureDataService {
 		);
 	}
 
+	/**
+	 * Aktualizuje pojedyncze ustawienie użytkownika.
+	 *
+	 * @param authenticatedUserId identyfikator użytkownika
+	 * @param settingId identyfikator ustawienia
+	 * @param request nowa wartość ustawienia
+	 * @return zaktualizowana pozycja ustawienia
+	 * @throws IllegalArgumentException gdy użytkownik nie istnieje lub wartość jest pusta
+	 */
 	@Transactional
 	public FeatureItemResponse updateSetting(Integer authenticatedUserId, Integer settingId, UpdateSettingRequest request) {
 		validateUserExists(authenticatedUserId);
 		String value = request.getValue() == null ? "" : request.getValue().trim();
 		if (value.isBlank()) {
+			log.warn("Pusta wartość ustawienia, userId={}, settingId={}", authenticatedUserId, settingId);
 			throw new IllegalArgumentException("Wartość ustawienia nie może być pusta");
 		}
 		String key = settingKeyById(settingId);
@@ -552,6 +597,7 @@ public class FeatureDataService {
 				key,
 				value
 		);
+		AppLog.success(log, "Zaktualizowano ustawienie, userId={}, settingId={}", authenticatedUserId, settingId);
 		return new FeatureItemResponse(settingId, settingTitleById(settingId), value);
 	}
 
@@ -657,7 +703,7 @@ public class FeatureDataService {
 				new FeatureItemResponse("Tryb prywatny", settingValue(userId, "privacy_mode", "wyłączony"))
 		);
 
-		return new ProfileOverviewResponse(
+		ProfileOverviewResponse overview = new ProfileOverviewResponse(
 				profileName == null || profileName.isBlank() ? "Użytkownik • USER" : profileName.trim(),
 				memberSince == null ? "Konto aktywne" : "Członek od " + memberSince,
 				String.valueOf(defaultInt(workoutsCount)),
@@ -668,6 +714,8 @@ public class FeatureDataService {
 				achievements,
 				summaryItems
 		);
+		AppLog.success(log, "Pobrano podsumowanie profilu, userId={}", userId);
+		return overview;
 	}
 
 	/**
@@ -712,6 +760,7 @@ public class FeatureDataService {
 		}, keyHolder);
 
 		Integer id = extractGeneratedId(keyHolder);
+		AppLog.success(log, "Utworzono plan treningowy (feature), userId={}, workoutId={}", authenticatedUserId, id);
 		return new FeatureItemResponse(
 				id,
 				"Plan #" + (id == null ? "N/A" : id),
@@ -780,8 +829,10 @@ public class FeatureDataService {
 				authenticatedUserId
 		);
 		if (updated == 0) {
+			log.warn("Nie udało się zaktualizować planu, workoutId={}, userId={}", workoutId, authenticatedUserId);
 			throw new IllegalArgumentException("Nie udało się zaktualizować planu o id=" + workoutId);
 		}
+		AppLog.success(log, "Zaktualizowano plan treningowy (feature), userId={}, workoutId={}", authenticatedUserId, workoutId);
 		return new FeatureItemResponse(
 				workoutId,
 				name,
@@ -941,6 +992,7 @@ public class FeatureDataService {
 				userId
 		);
 		if (defaultInt(count) == 0) {
+			log.warn("Ćwiczenie niedostępne dla użytkownika, userId={}, exerciseId={}", userId, exerciseId);
 			throw new IllegalArgumentException("Ćwiczenie nie istnieje lub nie jest dostępne dla użytkownika");
 		}
 	}
@@ -953,6 +1005,7 @@ public class FeatureDataService {
 				userId
 		);
 		if (defaultInt(count) == 0) {
+			log.warn("Sesja nie należy do użytkownika, userId={}, sessionId={}", userId, sessionId);
 			throw new IllegalArgumentException("Sesja o id=" + sessionId + " nie należy do użytkownika");
 		}
 	}
@@ -1141,7 +1194,6 @@ public class FeatureDataService {
 	public void deleteWorkout(Integer authenticatedUserId, Integer workoutId) {
 		validateUserOwnsWorkout(authenticatedUserId, workoutId);
 
-		// Najpierw usuwamy wyniki ćwiczeń przypięte do sesji tego planu.
 		jdbcTemplate.update(
 				"""
 				DELETE FROM exercise_results
@@ -1153,21 +1205,20 @@ public class FeatureDataService {
 				authenticatedUserId
 		);
 
-		// Następnie usuwamy sesje planu.
 		jdbcTemplate.update(
 				"DELETE FROM workout_sessions WHERE workout_id = ? AND user_id = ?",
 				workoutId,
 				authenticatedUserId
 		);
 
-		// Usuwamy mapowania ćwiczeń do planu.
 		jdbcTemplate.update("DELETE FROM workout_exercises WHERE workout_id = ?", workoutId);
 
-		// Na końcu usuwamy sam plan.
 		int deleted = jdbcTemplate.update("DELETE FROM workouts WHERE id = ? AND user_id = ?", workoutId, authenticatedUserId);
 		if (deleted == 0) {
+			log.warn("Nie można usunąć planu treningowego, workoutId={}, userId={}", workoutId, authenticatedUserId);
 			throw new IllegalArgumentException("Nie można usunąć planu treningowego o id=" + workoutId);
 		}
+		AppLog.success(log, "Usunięto plan treningowy (feature), userId={}, workoutId={}", authenticatedUserId, workoutId);
 	}
 
 	/**
@@ -1196,6 +1247,7 @@ public class FeatureDataService {
 			return ps;
 		}, keyHolder);
 		Integer id = extractGeneratedId(keyHolder);
+		AppLog.success(log, "Utworzono ćwiczenie (feature), userId={}, exerciseId={}", authenticatedUserId, id);
 		return new FeatureItemResponse(
 				id,
 				"Ćwiczenie #" + (id == null ? "N/A" : id),
@@ -1220,6 +1272,7 @@ public class FeatureDataService {
 				authenticatedUserId
 		);
 		if (defaultInt(activeSessions) > 0) {
+			log.warn("Próba rozpoczęcia drugiej aktywnej sesji, userId={}", authenticatedUserId);
 			throw new IllegalStateException("Masz już aktywną sesję. Zakończ ją przed rozpoczęciem kolejnej.");
 		}
 		KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -1240,6 +1293,8 @@ public class FeatureDataService {
 			return ps;
 		}, keyHolder);
 		Integer id = extractGeneratedId(keyHolder);
+		AppLog.success(log, "Rozpoczęto sesję treningową (feature), userId={}, sessionId={}, workoutId={}",
+				authenticatedUserId, id, workoutId);
 		return new FeatureItemResponse(
 				id,
 				"Sesja #" + (id == null ? "N/A" : id),
@@ -1269,8 +1324,11 @@ public class FeatureDataService {
 				authenticatedUserId
 		);
 		if (updated == 0) {
+			log.warn("Nie znaleziono sesji do zakończenia, sessionId={}, userId={}", sessionId, authenticatedUserId);
 			throw new IllegalArgumentException("Nie znaleziono sesji użytkownika o id=" + sessionId);
 		}
+		AppLog.success(log, "Zakończono sesję treningową (feature), userId={}, sessionId={}, duration={}",
+				authenticatedUserId, sessionId, duration);
 		return new FeatureItemResponse(
 				sessionId,
 				"Sesja #" + sessionId,
@@ -1293,8 +1351,11 @@ public class FeatureDataService {
 				authenticatedUserId
 		);
 		if (deleted == 0) {
+			log.warn("Nie znaleziono aktywnej sesji do anulowania, sessionId={}, userId={}",
+					sessionId, authenticatedUserId);
 			throw new IllegalArgumentException("Nie znaleziono aktywnej sesji do anulowania");
 		}
+		AppLog.success(log, "Anulowano sesję treningową (feature), userId={}, sessionId={}", authenticatedUserId, sessionId);
 	}
 
 	/**
@@ -1305,6 +1366,7 @@ public class FeatureDataService {
 	private void validateUserExists(Integer userId) {
 		Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users WHERE id = ?", Integer.class, userId);
 		if (defaultInt(count) == 0) {
+			log.warn("Nie znaleziono użytkownika, userId={}", userId);
 			throw new IllegalArgumentException("Nie znaleziono użytkownika o id=" + userId);
 		}
 	}

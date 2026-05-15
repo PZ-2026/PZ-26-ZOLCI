@@ -21,6 +21,11 @@ class NotificationsActivity : BaseFeatureActivity() {
     /** Aktywna zakładka dolnej nawigacji dla tego ekranu. */
     override val bottomNavItem: Int = R.id.nav_profile
 
+    /**
+     * Ukrywa akcję główną modułu i żąda uprawnienia POST_NOTIFICATIONS (Android 13+).
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         findViewById<View>(R.id.btnPrimaryAction)?.visibility = View.GONE

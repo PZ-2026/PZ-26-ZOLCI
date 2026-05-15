@@ -93,19 +93,6 @@
                     android:textColorHint="@color/text_secondary" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <TextView
-                android:id="@+id/tvSessionTimer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_badge_medium"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="6dp"
-                android:text="Sesja trwa: 00:00:00"
-                android:textColor="@color/accent_yellow"
-                android:textStyle="bold"
-                android:visibility="gone" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

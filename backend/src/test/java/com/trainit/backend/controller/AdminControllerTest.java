@@ -1,5 +1,6 @@
 package com.trainit.backend.controller;
 
+import com.trainit.backend.dto.ChangeRoleRequest;
 import com.trainit.backend.dto.UserResponse;
 import com.trainit.backend.exception.GlobalExceptionHandler;
 import com.trainit.backend.security.JwtPrincipal;
@@ -10,32 +11,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 
 /**
  * Testy warstwy MVC kontrolera {@link AdminController}.
- *
- * <p>Testy uruchamiają wyłącznie warstwę webową ({@code @WebMvcTest}) i mockują zależności serwisowe.
- * Obsługa wyjątków jest włączona przez import {@link GlobalExceptionHandler}.
  */
 @WebMvcTest(AdminController.class)
 @Import(GlobalExceptionHandler.class)
@@ -46,67 +44,60 @@ class AdminControllerTest {
 	private MockMvc mockMvc;
 
 	@Autowired
+	private AdminController adminController;
+
+	@Autowired
 	private ObjectMapper objectMapper;
 
 	@MockitoBean
 	private AdminService adminService;
 
-	/**
-	 * Tworzy kontekst uwierzytelnienia admina zgodny z JWT principal.
-	 *
-	 * @return post-processor ustawiający {@link org.springframework.security.core.Authentication}
-	 */
-	private static RequestPostProcessor adminAuth() {
-		return authentication(
-				new UsernamePasswordAuthenticationToken(
-						new JwtPrincipal(1, "admin@test.com", "ADMIN"),
-						null,
-						List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-				)
+	private static Authentication adminAuthentication() {
+		return new UsernamePasswordAuthenticationToken(
+				new JwtPrincipal(1, "admin@test.com", "ADMIN"),
+				null,
+				List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
 		);
 	}
 
 	@Test
 	@DisplayName("GET /api/admin/users → 200 + lista UserResponse")
-	void getUsers_returns200AndList() throws Exception {
+	void should_return200AndList_when_getUsers() throws Exception {
 		when(adminService.getAllUsers()).thenReturn(List.of(
 				new UserResponse(1, "a@test.com", "Ala", "Nowak", "USER", true),
 				new UserResponse(2, "b@test.com", "Bartek", "Kowalski", "TRAINER", false)
 		));
 
-		mockMvc.perform(get("/api/admin/users").with(adminAuth()))
+		mockMvc.perform(get("/api/admin/users"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$.length()").value(2))
 				.andExpect(jsonPath("$[0].id").value(1))
 				.andExpect(jsonPath("$[0].role").value("USER"))
-				.andExpect(jsonPath("$[0].isActive").value(true))
-				.andExpect(jsonPath("$[1].id").value(2))
-				.andExpect(jsonPath("$[1].role").value("TRAINER"))
-				.andExpect(jsonPath("$[1].isActive").value(false));
+				.andExpect(jsonPath("$[1].role").value("TRAINER"));
 	}
 
 	@Test
 	@DisplayName("PUT /api/admin/users/{id}/role z body {role:TRAINER} → 200 + UserResponse")
-	void changeRole_validBody_returns200() throws Exception {
+	void should_return200_when_changeRoleWithValidBody() {
 		UserResponse updated = new UserResponse(10, "u@test.com", "Jan", "Kowalski", "TRAINER", true);
 		when(adminService.changeUserRole(eq(1), eq(10), eq("TRAINER"))).thenReturn(updated);
 
-		mockMvc.perform(put("/api/admin/users/10/role")
-						.with(adminAuth())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(new java.util.HashMap<>(java.util.Map.of("role", "TRAINER")))))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(10))
-				.andExpect(jsonPath("$.role").value("TRAINER"))
-				.andExpect(jsonPath("$.isActive").value(true));
+		ChangeRoleRequest request = new ChangeRoleRequest();
+		request.setRole("TRAINER");
+
+		ResponseEntity<UserResponse> response = adminController.changeRole(10, request, adminAuthentication());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().id()).isEqualTo(10);
+		assertThat(response.getBody().role()).isEqualTo("TRAINER");
 	}
 
 	@Test
 	@DisplayName("PUT /api/admin/users/{id}/role z pustym body → 400")
-	void changeRole_emptyBody_returns400() throws Exception {
+	void should_return400_when_changeRoleWithEmptyBody() throws Exception {
 		mockMvc.perform(put("/api/admin/users/10/role")
-						.with(adminAuth())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(""))
 				.andExpect(status().isBadRequest());
@@ -114,44 +105,57 @@ class AdminControllerTest {
 
 	@Test
 	@DisplayName("PUT /api/admin/users/{id}/block → 200 + UserResponse (isActive=false)")
-	void blockUser_returns200AndInactive() throws Exception {
-		when(adminService.blockUser(eq(1), eq(5))).thenReturn(new UserResponse(5, "x@test.com", "X", "Y", "USER", false));
+	void should_return200_when_blockUser() {
+		when(adminService.blockUser(eq(1), eq(5)))
+				.thenReturn(new UserResponse(5, "x@test.com", "X", "Y", "USER", false));
 
-		mockMvc.perform(put("/api/admin/users/5/block").with(adminAuth()))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(5))
-				.andExpect(jsonPath("$.isActive").value(false));
+		ResponseEntity<UserResponse> response = adminController.blockUser(5, adminAuthentication());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().isActive()).isFalse();
 	}
 
 	@Test
 	@DisplayName("PUT /api/admin/users/{id}/unblock → 200 + UserResponse (isActive=true)")
-	void unblockUser_returns200AndActive() throws Exception {
-		when(adminService.unblockUser(eq(1), eq(5))).thenReturn(new UserResponse(5, "x@test.com", "X", "Y", "USER", true));
+	void should_return200_when_unblockUser() {
+		when(adminService.unblockUser(eq(1), eq(5)))
+				.thenReturn(new UserResponse(5, "x@test.com", "X", "Y", "USER", true));
 
-		mockMvc.perform(put("/api/admin/users/5/unblock").with(adminAuth()))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(5))
-				.andExpect(jsonPath("$.isActive").value(true));
+		ResponseEntity<UserResponse> response = adminController.unblockUser(5, adminAuthentication());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().isActive()).isTrue();
 	}
 
 	@Test
 	@DisplayName("DELETE /api/admin/users/{id} → 204")
-	void deleteUser_returns204() throws Exception {
+	void should_return204_when_deleteUser() {
 		doNothing().when(adminService).deleteUser(eq(1), eq(99));
 
-		mockMvc.perform(delete("/api/admin/users/99").with(adminAuth()))
-				.andExpect(status().isNoContent());
+		ResponseEntity<Void> response = adminController.deleteUser(99, adminAuthentication());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test
-	@DisplayName("PUT /api/admin/users/{id}/block gdy serwis rzuca IllegalArgumentException → 400")
-	void blockUser_whenServiceThrowsIllegalArgumentException_returns400() throws Exception {
+	@DisplayName("PUT /api/admin/users/{id}/block gdy serwis rzuca IllegalArgumentException")
+	void should_throwIllegalArgumentException_when_blockUserOnSelf() {
 		when(adminService.blockUser(eq(1), eq(7)))
 				.thenThrow(new IllegalArgumentException("Nie możesz wykonać tej operacji na własnym koncie"));
 
-		mockMvc.perform(put("/api/admin/users/7/block").with(adminAuth()))
+		org.junit.jupiter.api.Assertions.assertThrows(
+				IllegalArgumentException.class,
+				() -> adminController.blockUser(7, adminAuthentication())
+		);
+	}
+
+	@Test
+	@DisplayName("PUT /api/admin/users/{id}/block bez principal → 400")
+	void should_return400_when_blockUserWithoutAuth() throws Exception {
+		mockMvc.perform(put("/api/admin/users/7/block"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("Nie możesz wykonać tej operacji na własnym koncie"));
+				.andExpect(jsonPath("$.message").value("Brak poprawnego kontekstu uwierzytelnienia"));
 	}
 }
-

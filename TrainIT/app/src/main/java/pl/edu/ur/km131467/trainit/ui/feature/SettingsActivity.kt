@@ -25,6 +25,7 @@ class SettingsActivity : BaseFeatureActivity() {
     /** Aktywna zakładka dolnej nawigacji dla tego ekranu. */
     override val bottomNavItem: Int = R.id.nav_profile
 
+    /** Inicjalizuje [SessionManager] przed obsługą kliknięć pozycji ustawień. */
     override fun onStart() {
         super.onStart()
         sessionManager = SessionManager(this)

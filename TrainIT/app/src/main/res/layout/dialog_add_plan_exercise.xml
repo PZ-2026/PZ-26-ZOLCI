@@ -37,47 +37,133 @@
                 android:textColorHint="@color/hint_color" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        <!-- Liczniki serii i powtórzeń -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:hint="Serie"
-            app:boxBackgroundColor="@color/card_dark"
-            app:boxStrokeColor="@color/accent_yellow"
-            app:hintTextColor="@color/text_secondary">
+            android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/etSets"
-                android:layout_width="match_parent"
+            <!-- Serie -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:inputType="number"
-                android:text="3"
-                android:textColor="@color/white"
-                android:textColorHint="@color/hint_color" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:hint="Powtórzenia"
-            app:boxBackgroundColor="@color/card_dark"
-            app:boxStrokeColor="@color/accent_yellow"
-            app:hintTextColor="@color/text_secondary">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Serie"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
 
-            <EditText
-                android:id="@+id/etReps"
-                android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSetsMinus"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:text="−"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="18sp"
+                        app:strokeColor="@color/accent_yellow" />
+
+                    <TextView
+                        android:id="@+id/tvSetsCount"
+                        android:layout_width="44dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="3"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSetsPlus"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:text="+"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="18sp"
+                        app:strokeColor="@color/accent_yellow" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Powtórzenia -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:inputType="number"
-                android:text="10"
-                android:textColor="@color/white"
-                android:textColorHint="@color/hint_color" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Powtórzenia"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRepsMinus"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:text="−"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="18sp"
+                        app:strokeColor="@color/accent_yellow" />
+
+                    <TextView
+                        android:id="@+id/tvRepsCount"
+                        android:layout_width="44dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="10"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRepsPlus"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:text="+"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="18sp"
+                        app:strokeColor="@color/accent_yellow" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

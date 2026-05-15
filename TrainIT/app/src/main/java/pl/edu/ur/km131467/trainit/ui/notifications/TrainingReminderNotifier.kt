@@ -11,6 +11,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import pl.edu.ur.km131467.trainit.R
 
+/**
+ * Wyświetla powiadomienia o nadchodzących treningach.
+ */
 object TrainingReminderNotifier {
     private const val CHANNEL_ID = "trainit_training_reminders"
 

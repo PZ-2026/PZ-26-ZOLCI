@@ -84,7 +84,6 @@ class FeatureRepository(
 
         val startedAt = sessionManager.getActiveSessionStartedAt()
         val elapsedMinutes = startedAt
-            // Zaokrąglamy w górę: 1:01 -> 2 min (bardziej intuicyjne dla użytkownika).
             ?.let { ((System.currentTimeMillis() - it + 59_999L) / 60_000L).toInt().coerceAtLeast(1) }
             ?: 1
 
@@ -276,7 +275,10 @@ class FeatureRepository(
         return FeatureListItem(updated.id, updated.title, updated.subtitle)
     }
 
-    suspend fun getProfileOverview(sessionManager: SessionManager): ProfileOverviewDto {
+        /**
+     * Pobiera zagregowany widok profilu użytkownika z API.
+     */
+suspend fun getProfileOverview(sessionManager: SessionManager): ProfileOverviewDto {
         val authHeader = buildAuthHeader(sessionManager)
         val response = featureApi.getProfileOverview(authHeader)
         if (!response.isSuccessful || response.body() == null) {
@@ -362,7 +364,6 @@ class FeatureRepository(
                     if (!startResponse.isSuccessful || startResponse.body() == null) {
                         throw IllegalStateException("Nie udało się uruchomić sesji")
                     }
-                    sessionManager.setActiveSessionStartedAt(System.currentTimeMillis())
                     "Uruchomiono nową sesję"
                 }
             }

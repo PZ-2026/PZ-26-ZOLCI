@@ -22,6 +22,11 @@ class AdminUserModuleActivity : BaseFeatureActivity() {
 
     override val bottomNavItem: Int = pl.edu.ur.km131467.trainit.R.id.nav_profile
 
+    /**
+     * Ustawia [targetUserId] z intencji, a następnie inicjalizuje widok modułu dla wybranego użytkownika.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         val userId = intent.getIntExtra(EXTRA_USER_ID, -1)
         targetUserId = userId.takeIf { it > 0 }

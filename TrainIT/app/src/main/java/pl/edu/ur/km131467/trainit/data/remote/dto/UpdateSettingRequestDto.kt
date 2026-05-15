@@ -2,6 +2,10 @@ package pl.edu.ur.km131467.trainit.data.remote.dto
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Model DTO: UpdateSettingRequestDto.
+ * @param value wartość ustawienia
+ */
 @Serializable
 data class UpdateSettingRequestDto(
     val value: String,

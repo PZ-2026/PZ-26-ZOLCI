@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 /**
  * DTO żądania resetu hasła użytkownika.
+ *
+ * @param email adres e-mail konta
+ * @param newPassword nowe hasło
  */
 @Serializable
 data class ForgotPasswordRequestDto(

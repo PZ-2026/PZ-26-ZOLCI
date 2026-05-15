@@ -2,8 +2,6 @@ package pl.edu.ur.km131467.trainit.ui.feature
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -62,9 +60,6 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
     /** Podtytuł modułu. */
     private lateinit var tvModuleSubtitle: TextView
 
-    /** Timer aktywnej sesji (widoczny dla modułu sesji). */
-    private lateinit var tvSessionTimer: TextView
-
     /** Pasek postępu widoczny podczas ładowania. */
     private lateinit var loadingIndicator: LinearProgressIndicator
 
@@ -95,10 +90,6 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
 
     /** Dolna nawigacja głównych sekcji aplikacji. */
     private lateinit var bottomNavigation: BottomNavigationView
-
-    private val timerHandler = Handler(Looper.getMainLooper())
-    private var timerRunnable: Runnable? = null
-    private var sessionTimerStartedAtMillis: Long? = null
 
     /**
      * Inicjalizuje wspólny ekran modułowy i uruchamia pierwsze ładowanie danych.
@@ -135,7 +126,6 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
     private fun initViews() {
         tvModuleTitle = findViewById(R.id.tvModuleTitle)
         tvModuleSubtitle = findViewById(R.id.tvModuleSubtitle)
-        tvSessionTimer = findViewById(R.id.tvSessionTimer)
         loadingIndicator = findViewById(R.id.loadingIndicator)
         tvError = findViewById(R.id.tvError)
         tvEmpty = findViewById(R.id.tvEmpty)
@@ -173,39 +163,21 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
         tvModuleTitle.text = module.title
         tvModuleSubtitle.text = module.subtitle
         btnPrimaryAction.text = module.primaryActionLabel
-        if (module == FeatureModule.SESSIONS) {
-            sessionTimerStartedAtMillis = SessionManager(this).getActiveSessionStartedAt()
-            if (sessionTimerStartedAtMillis != null) {
-                tvSessionTimer.visibility = android.view.View.VISIBLE
-                startSessionTimer()
-            } else {
-                tvSessionTimer.visibility = android.view.View.GONE
-            }
-        } else {
-            tvSessionTimer.visibility = android.view.View.GONE
-        }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (module == FeatureModule.SESSIONS) {
-            sessionTimerStartedAtMillis = SessionManager(this).getActiveSessionStartedAt()
-            if (sessionTimerStartedAtMillis != null) {
-                tvSessionTimer.visibility = android.view.View.VISIBLE
-                startSessionTimer()
-            }
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        stopSessionTimer()
-    }
+    /**
+     * Wywoływana po kliknięciu przycisku akcji głównej.
+     * Podklasy mogą nadpisać tę metodę, aby zastąpić domyślne zachowanie ViewModelu.
+     * Zwraca `true` jeśli akcja została obsłużona (ViewModel nie zostanie wywołany).
+     */
+    open fun onPrimaryAction(): Boolean = false
 
     /** Konfiguruje obsługę kliknięć akcji głównej i odświeżenia. */
     private fun setupActions() {
         btnPrimaryAction.setOnClickListener {
-            viewModel.runPrimaryAction(module)
+            if (!onPrimaryAction()) {
+                viewModel.runPrimaryAction(module)
+            }
         }
         btnSecondaryAction.setOnClickListener { viewModel.load(module) }
     }
@@ -342,26 +314,6 @@ abstract class BaseFeatureActivity : AppCompatActivity() {
             row.setOnClickListener { onFeatureItemClicked(item) }
             listContainer.addView(row)
         }
-    }
-
-    private fun startSessionTimer() {
-        val startedAt = sessionTimerStartedAtMillis ?: return
-        stopSessionTimer()
-        timerRunnable = object : Runnable {
-            override fun run() {
-                val elapsedSeconds = ((System.currentTimeMillis() - startedAt) / 1000).coerceAtLeast(0)
-                val hours = elapsedSeconds / 3600
-                val minutes = (elapsedSeconds % 3600) / 60
-                val seconds = elapsedSeconds % 60
-                tvSessionTimer.text = String.format("Sesja trwa: %02d:%02d:%02d", hours, minutes, seconds)
-                timerHandler.postDelayed(this, 1000L)
-            }
-        }.also { timerHandler.post(it) }
-    }
-
-    private fun stopSessionTimer() {
-        timerRunnable?.let { timerHandler.removeCallbacks(it) }
-        timerRunnable = null
     }
 
     /**

@@ -27,7 +27,12 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
         }
         release {
-            buildConfigField("String", "BASE_URL", "\"https://production-url.example/\"")
+            // Ustaw PRODUCTION_BASE_URL w local.properties lub jako zmienną środowiskową
+            // Przykład w local.properties:  PRODUCTION_BASE_URL=http://123.456.78.9:8080/
+            val productionUrl = (project.findProperty("PRODUCTION_BASE_URL")
+                ?: System.getenv("PRODUCTION_BASE_URL")
+                ?: "http://WSTAW_IP_SERWERA:8080/") as String
+            buildConfigField("String", "BASE_URL", "\"$productionUrl\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

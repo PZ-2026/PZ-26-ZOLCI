@@ -26,7 +26,12 @@ import pl.edu.ur.km131467.trainit.ui.feature.FeatureListItem
 import pl.edu.ur.km131467.trainit.ui.feature.FeatureModule
 import pl.edu.ur.km131467.trainit.ui.login.LoginActivity
 
-/** Zarządzanie ćwiczeniami w planie (WF-8): lista, dodawanie, usuwanie pozycji. */
+/**
+ * Ekran zarządzania ćwiczeniami w planie treningowym (WF-8).
+ *
+ * Wyświetla listę pozycji planu, umożliwia dodawanie ćwiczeń z katalogu
+ * oraz usuwanie wybranych wierszy.
+ */
 class WorkoutExercisesActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
@@ -39,6 +44,11 @@ class WorkoutExercisesActivity : AppCompatActivity() {
     private var workoutId: Int = -1
     private var lines: List<WorkoutExerciseLineDto> = emptyList()
 
+    /**
+     * Weryfikuje sesję, odczytuje identyfikator planu z intencji i wiąże widoki listy.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sessionManager = SessionManager(this)
@@ -62,6 +72,7 @@ class WorkoutExercisesActivity : AppCompatActivity() {
         fabAddExercise.setOnClickListener { showAddExerciseDialog() }
     }
 
+    /** Odświeża listę ćwiczeń planu po powrocie z dialogu dodawania. */
     override fun onResume() {
         super.onResume()
         loadLines()
@@ -160,10 +171,26 @@ class WorkoutExercisesActivity : AppCompatActivity() {
 
             val dialogView = layoutInflater.inflate(R.layout.dialog_add_plan_exercise, null, false)
             val acExercise = dialogView.findViewById<MaterialAutoCompleteTextView>(R.id.acExerciseName)
-            val etSets = dialogView.findViewById<EditText>(R.id.etSets)
-            val etReps = dialogView.findViewById<EditText>(R.id.etReps)
+            val tvSetsCount = dialogView.findViewById<TextView>(R.id.tvSetsCount)
+            val tvRepsCount = dialogView.findViewById<TextView>(R.id.tvRepsCount)
             val etWeight = dialogView.findViewById<EditText>(R.id.etWeight)
             val etDuration = dialogView.findViewById<EditText>(R.id.etDuration)
+
+            var planSets = 3
+            var planReps = 10
+
+            dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSetsMinus).setOnClickListener {
+                if (planSets > 1) { planSets--; tvSetsCount.text = planSets.toString() }
+            }
+            dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSetsPlus).setOnClickListener {
+                planSets++; tvSetsCount.text = planSets.toString()
+            }
+            dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnRepsMinus).setOnClickListener {
+                if (planReps > 1) { planReps--; tvRepsCount.text = planReps.toString() }
+            }
+            dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnRepsPlus).setOnClickListener {
+                planReps++; tvRepsCount.text = planReps.toString()
+            }
 
             var selectedExerciseId: Int? = null
             val titles = exercisePairs.map { it.second }
@@ -201,8 +228,6 @@ class WorkoutExercisesActivity : AppCompatActivity() {
                         ).show()
                         return@setOnClickListener
                     }
-                    val sets = etSets.text?.toString()?.trim()?.toIntOrNull()
-                    val reps = etReps.text?.toString()?.trim()?.toIntOrNull()
                     val weight = etWeight.text?.toString()?.trim()?.toDoubleOrNull()
                     val duration = etDuration.text?.toString()?.trim()?.toIntOrNull()
                     lifecycleScope.launch {
@@ -212,8 +237,8 @@ class WorkoutExercisesActivity : AppCompatActivity() {
                                 workoutId,
                                 AddWorkoutExerciseLineRequestDto(
                                     exerciseId = exId,
-                                    sets = sets,
-                                    reps = reps,
+                                    sets = planSets,
+                                    reps = planReps,
                                     weight = weight,
                                     duration = duration,
                                 ),

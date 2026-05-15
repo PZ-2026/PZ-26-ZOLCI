@@ -13,21 +13,39 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.PUT
 
+/**
+ * API REST do uwierzytelniania.
+ */
 interface AuthApi {
 
     @POST("api/auth/register")
+    /**
+     * Wywołuje endpoint: `register`.
+     */
     suspend fun register(@Body body: RegisterRequestDto): Response<UserDto>
 
     @POST("api/auth/login")
+    /**
+     * Wywołuje endpoint: `login`.
+     */
     suspend fun login(@Body body: LoginRequestDto): Response<LoginResponseDto>
 
     @POST("api/auth/forgot-password")
+    /**
+     * Wywołuje endpoint: `forgotPassword`.
+     */
     suspend fun forgotPassword(@Body body: ForgotPasswordRequestDto): Response<Unit>
 
     @GET("api/auth/me")
+    /**
+     * Wywołuje endpoint: `getMe`.
+     */
     suspend fun getMe(@Header("Authorization") authorization: String): Response<UserDto>
 
     @PUT("api/auth/me")
+    /**
+     * Wywołuje endpoint: `updateMe`.
+     */
     suspend fun updateMe(
         @Header("Authorization") authorization: String,
         @Body body: UpdateProfileRequestDto,

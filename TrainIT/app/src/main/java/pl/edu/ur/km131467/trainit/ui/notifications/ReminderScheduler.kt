@@ -8,6 +8,9 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
+/**
+ * Planuje cykliczne sprawdzanie zaplanowanych treningów (WorkManager).
+ */
 object ReminderScheduler {
     private const val WORK_NAME = "trainit_planned_training_reminder"
 

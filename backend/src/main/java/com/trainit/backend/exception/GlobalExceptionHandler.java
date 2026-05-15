@@ -56,6 +56,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<Map<String, String>> handleNotReadable(HttpMessageNotReadableException ex) {
+		log.warn("Nieprawidłowy format JSON: {}", ex.getMessage());
 		return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, "Nieprawidłowy format JSON"));
 	}
 
@@ -69,6 +70,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+		log.warn("Błąd walidacji żądania: {} pól", ex.getBindingResult().getFieldErrorCount());
 		List<Map<String, String>> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
 				.map(fe -> {
 					Map<String, String> err = new HashMap<>();
@@ -91,6 +93,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<Map<String, String>> handleDataIntegrity(DataIntegrityViolationException ex) {
+		log.warn("Konflikt integralności danych: {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE_KEY, "Konflikt integralności danych"));
 	}
 
@@ -103,6 +106,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
 		String msg = ex.getMessage() != null ? ex.getMessage() : "Nieprawidłowe żądanie";
+		log.warn("Nieprawidłowe żądanie: {}", msg);
 		return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, msg));
 	}
 
@@ -114,6 +118,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(EmailAlreadyExistsException.class)
 	public ResponseEntity<Map<String, String>> handleEmailTaken(EmailAlreadyExistsException ex) {
+		log.warn("Konflikt rejestracji: {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MESSAGE_KEY, ex.getMessage()));
 	}
 
@@ -125,6 +130,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(InvalidCredentialsException.class)
 	public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
+		log.warn("Nieudane logowanie: {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE_KEY, ex.getMessage()));
 	}
 
@@ -138,7 +144,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
-		log.error("Unexpected error", ex);
+		log.error("Nieoczekiwany błąd serwera", ex);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(Map.of(MESSAGE_KEY, "Wystąpił nieoczekiwany błąd"));
 	}

@@ -27,7 +27,7 @@ class AdminDashboardActivity : AppCompatActivity() {
     private lateinit var btnLogout: MaterialButton
     private lateinit var btnManageUsers: MaterialButton
 
-    // Global buttons
+    /** Przyciski podglądu danych globalnych (cały system). */
     private lateinit var btnGlobalWorkouts: MaterialButton
     private lateinit var btnGlobalExercises: MaterialButton
     private lateinit var btnGlobalSessions: MaterialButton
@@ -35,7 +35,7 @@ class AdminDashboardActivity : AppCompatActivity() {
     private lateinit var btnGlobalReports: MaterialButton
     private lateinit var btnGlobalSettings: MaterialButton
 
-    // User buttons
+    /** Przyciski podglądu danych wybranego użytkownika. */
     private lateinit var btnUserWorkouts: MaterialButton
     private lateinit var btnUserExercises: MaterialButton
     private lateinit var btnUserSessions: MaterialButton
@@ -44,6 +44,11 @@ class AdminDashboardActivity : AppCompatActivity() {
     private lateinit var btnUserSettings: MaterialButton
     private lateinit var btnUserNotifications: MaterialButton
 
+    /**
+     * Weryfikuje sesję, wiąże widoki i konfiguruje nawigację do modułów globalnych oraz per użytkownik.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sessionManager = SessionManager(this)

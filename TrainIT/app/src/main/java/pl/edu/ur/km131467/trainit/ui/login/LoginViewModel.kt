@@ -17,13 +17,33 @@ import pl.edu.ur.km131467.trainit.data.remote.dto.RegisterRequestDto
 import pl.edu.ur.km131467.trainit.data.repository.AuthRepository
 import pl.edu.ur.km131467.trainit.data.repository.AuthResult
 
+/**
+ * Stan ekranu logowania / rejestracji.
+ */
 sealed class LoginUiState {
+
+    /** Stan bezczynności — brak trwającej operacji sieciowej. */
     data object Idle : LoginUiState()
+
+    /** Stan ładowania — trwa wywołanie API uwierzytelniania. */
     data object Loading : LoginUiState()
+
+    /** Stan sukcesu — sesja użytkownika została zapisana lokalnie. */
     data object Success : LoginUiState()
+
+    /**
+     * Stan błędu z komunikatem dla użytkownika.
+     *
+     * @param message treść błędu do wyświetlenia na ekranie.
+     */
     data class Error(val message: String) : LoginUiState()
 }
 
+/**
+ * ViewModel ekranu logowania, rejestracji i resetu hasła.
+ *
+ * Koordynuje wywołania [AuthRepository] oraz zapis sesji w [SessionManager].
+ */
 class LoginViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
@@ -32,14 +52,24 @@ class LoginViewModel(
     private val authRepository = AuthRepository(NetworkModule.authApi)
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
+    /** Obserwowalny stan UI ekranu uwierzytelniania. */
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    /** Jednorazowe komunikaty (np. po resecie hasła) emitowane do UI. */
     val messages: SharedFlow<String> = _messages
 
+    /** Przywraca stan [LoginUiState.Idle] po obsłużeniu sukcesu lub błędu. */
     fun resetToIdle() {
         _uiState.value = LoginUiState.Idle
     }
 
+    /**
+     * Loguje użytkownika i zapisuje token oraz profil w [SessionManager].
+     *
+     * @param email adres e-mail
+     * @param password hasło
+     */
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _uiState.value = LoginUiState.Loading
@@ -63,6 +93,13 @@ class LoginViewModel(
         }
     }
 
+    /**
+     * Rejestruje konto, a następnie automatycznie loguje użytkownika.
+     *
+     * @param fullName imię i nazwisko (rozdzielane spacją)
+     * @param email adres e-mail
+     * @param password hasło
+     */
     fun register(fullName: String, email: String, password: String) {
         viewModelScope.launch {
             _uiState.value = LoginUiState.Loading
@@ -105,6 +142,12 @@ class LoginViewModel(
         }
     }
 
+    /**
+     * Resetuje hasło użytkownika i emituje komunikat przez [messages].
+     *
+     * @param email adres e-mail konta
+     * @param newPassword nowe hasło
+     */
     fun forgotPassword(email: String, newPassword: String) {
         viewModelScope.launch {
             when (

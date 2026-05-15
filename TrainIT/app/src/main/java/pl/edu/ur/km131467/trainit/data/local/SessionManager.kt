@@ -5,9 +5,10 @@ import android.content.SharedPreferences
 import java.time.LocalDate
 
 /**
- * Prosta warstwa dostępu do danych sesji przechowywanych w [SharedPreferences].
+ * Zarządzanie sesją użytkownika w [SharedPreferences] (token JWT, profil, preferencje).
  *
- * Odpowiada za zapis i odczyt danych uwierzytelnionego użytkownika.
+ * Odpowiada za zapis i odczyt danych uwierzytelnionego użytkownika oraz lokalnych
+ * markerów aktywnej sesji treningowej i powiadomień.
  */
 class SessionManager(context: Context) {
     private val appContext: Context = context.applicationContext
@@ -18,6 +19,13 @@ class SessionManager(context: Context) {
 
     /**
      * Zapisuje kompletny stan sesji po udanym logowaniu/rejestracji.
+     *
+     * @param userId identyfikator użytkownika
+     * @param token token JWT
+     * @param email adres e-mail
+     * @param firstName imię
+     * @param lastName nazwisko
+     * @param role rola w systemie (np. USER, TRAINER, ADMIN)
      */
     fun saveSession(
         userId: Int,
@@ -56,7 +64,11 @@ class SessionManager(context: Context) {
 
     /** Zwraca imię użytkownika zapisane podczas logowania. */
     fun getFirstName(): String? = prefs.getString(KEY_FIRST_NAME, null)
+
+    /** Zwraca nazwisko użytkownika zapisane podczas logowania. */
     fun getLastName(): String? = prefs.getString(KEY_LAST_NAME, null)
+
+    /** Zwraca adres e-mail użytkownika zapisany podczas logowania. */
     fun getEmail(): String? = prefs.getString(KEY_EMAIL, null)
 
     /**
@@ -77,11 +89,18 @@ class SessionManager(context: Context) {
         return if (stored > 0L) stored else null
     }
 
-    /** Czyści stan aktywnej sesji treningowej. */
+    /** Czyści lokalny marker aktywnej sesji treningowej. */
     fun clearActiveSession() {
         prefs.edit().remove(KEY_ACTIVE_SESSION_STARTED_AT).apply()
     }
 
+    /**
+     * Aktualizuje dane profilu w lokalnej sesji (po edycji profilu w aplikacji).
+     *
+     * @param firstName imię
+     * @param lastName nazwisko
+     * @param email adres e-mail
+     */
     fun updateProfile(firstName: String, lastName: String, email: String) {
         prefs.edit().apply {
             putString(KEY_FIRST_NAME, firstName)
@@ -91,23 +110,41 @@ class SessionManager(context: Context) {
         }
     }
 
+    /**
+     * Sprawdza, czy dla danej zaplanowanej sesji nie wysłano jeszcze powiadomienia.
+     *
+     * @param sessionId identyfikator sesji treningowej
+     * @return `true` gdy powiadomienie powinno zostać wyświetlone
+     */
     fun shouldNotifyPlannedSession(sessionId: Int): Boolean {
         return prefs.getInt(KEY_LAST_NOTIFIED_PLANNED_SESSION_ID, -1) != sessionId
     }
 
+    /**
+     * Zapisuje identyfikator sesji, dla której wysłano już powiadomienie o planie.
+     *
+     * @param sessionId identyfikator sesji treningowej
+     */
     fun markPlannedSessionNotified(sessionId: Int) {
         prefs.edit().putInt(KEY_LAST_NOTIFIED_PLANNED_SESSION_ID, sessionId).apply()
     }
 
+    /**
+     * Sprawdza, czy w bieżącym tygodniu nie pokazano jeszcze powiadomienia o osiągnięciu celu.
+     *
+     * @return `true` gdy powiadomienie o celu powinno zostać wyświetlone
+     */
     fun shouldShowGoalReachedThisWeek(): Boolean {
         val marker = currentWeekMarker()
         return prefs.getString(KEY_LAST_GOAL_REACHED_WEEK, null) != marker
     }
 
+    /** Oznacza bieżący tydzień jako taki, w którym pokazano powiadomienie o osiągnięciu celu. */
     fun markGoalReachedThisWeek() {
         prefs.edit().putString(KEY_LAST_GOAL_REACHED_WEEK, currentWeekMarker()).apply()
     }
 
+    /** Zwraca znacznik tygodnia w formacie `rok-Wnumer` (ISO week-based year). */
     private fun currentWeekMarker(): String {
         val now = LocalDate.now()
         val week = now.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR)

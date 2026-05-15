@@ -13,16 +13,46 @@ import pl.edu.ur.km131467.trainit.data.remote.dto.UserDto
 import retrofit2.Response
 import java.io.IOException
 
+/**
+ * Wynik operacji uwierzytelniania w warstwie repozytorium.
+ *
+ * @param T typ danych zwracanych przy sukcesie
+ */
 sealed class AuthResult<out T> {
+
+    /**
+     * Operacja zakończona sukcesem.
+     *
+     * @param data odpowiedź z API
+     */
     data class Success<T>(val data: T) : AuthResult<T>()
+
+    /**
+     * Błąd biznesowy lub HTTP z komunikatem dla użytkownika.
+     *
+     * @param message opis błędu
+     */
     data class Error(val message: String) : AuthResult<Nothing>()
+
+    /** Błąd sieci (brak połączenia, timeout). */
     data object NetworkError : AuthResult<Nothing>()
 }
 
+/**
+ * Repozytorium operacji uwierzytelniania i profilu użytkownika.
+ *
+ * Mapuje odpowiedzi [AuthApi] na typ [AuthResult] z polskimi komunikatami błędów.
+ */
 class AuthRepository(
     private val authApi: AuthApi = NetworkModule.authApi,
 ) {
 
+    /**
+     * Rejestruje nowe konto użytkownika.
+     *
+     * @param request dane rejestracji
+     * @return [AuthResult] z [UserDto] lub błędem
+     */
     suspend fun register(request: RegisterRequestDto): AuthResult<UserDto> {
         return try {
             mapResponse(authApi.register(request))
@@ -35,6 +65,12 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Loguje użytkownika i zwraca token JWT wraz z danymi profilu.
+     *
+     * @param request dane logowania
+     * @return [AuthResult] z [LoginResponseDto] lub błędem
+     */
     suspend fun login(request: LoginRequestDto): AuthResult<LoginResponseDto> {
         return try {
             mapResponse(authApi.login(request))
@@ -47,6 +83,12 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Resetuje hasło użytkownika (WF odzyskiwania hasła).
+     *
+     * @param request e-mail i nowe hasło
+     * @return [AuthResult] z [Unit] przy sukcesie lub błędem
+     */
     suspend fun forgotPassword(request: ForgotPasswordRequestDto): AuthResult<Unit> {
         return try {
             val response = authApi.forgotPassword(request)
@@ -64,6 +106,12 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Pobiera profil zalogowanego użytkownika.
+     *
+     * @param token token JWT (bez prefiksu „Bearer”)
+     * @return [AuthResult] z [UserDto] lub błędem
+     */
     suspend fun getMe(token: String): AuthResult<UserDto> {
         return try {
             mapResponse(authApi.getMe("Bearer $token"))
@@ -76,6 +124,13 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Aktualizuje profil zalogowanego użytkownika.
+     *
+     * @param token token JWT (bez prefiksu „Bearer”)
+     * @param request zmienione pola profilu
+     * @return [AuthResult] z [UserDto] lub błędem
+     */
     suspend fun updateMe(token: String, request: UpdateProfileRequestDto): AuthResult<UserDto> {
         return try {
             mapResponse(authApi.updateMe("Bearer $token", request))

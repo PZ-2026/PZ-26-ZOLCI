@@ -22,6 +22,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
 	/**
+	 * Konstruktor domyślny; konfiguracja rejestrowana jako bean przez Springa.
+	 */
+	public SecurityConfig() {
+	}
+
+	/**
 	 * Rejestruje łańcuch filtrów bezpieczeństwa.
 	 *
 	 * @param http obiekt konfiguracji bezpieczeństwa HTTP

@@ -22,6 +22,12 @@ import pl.edu.ur.km131467.trainit.data.remote.dto.AddSessionExerciseResultReques
 import pl.edu.ur.km131467.trainit.data.remote.dto.SessionExerciseResultDto
 import pl.edu.ur.km131467.trainit.data.repository.FeatureRepository
 
+/**
+ * Ekran wyników ćwiczeń w ramach sesji treningowej.
+ *
+ * Wyświetla listę zapisanych wyników, liczniki bieżącej serii i powtórzeń
+ * oraz umożliwia dodawanie i edycję wyników pojedynczych ćwiczeń.
+ */
 class SessionResultsActivity : AppCompatActivity() {
     private lateinit var sessionManager: SessionManager
     private val featureRepository = FeatureRepository()
@@ -32,6 +38,17 @@ class SessionResultsActivity : AppCompatActivity() {
     private lateinit var fabAddResult: FloatingActionButton
     private lateinit var tvTitle: TextView
 
+    /** Widoki liczników bieżącej serii i powtórzenia. */
+    private lateinit var tvCurrentSet: TextView
+    private lateinit var tvCurrentRep: TextView
+    private var currentSet: Int = 1
+    private var currentRep: Int = 10
+
+    /**
+     * Wiąże widoki wyników sesji, liczniki serii/powtórzeń i obsługę FAB dodawania wyniku.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sessionManager = SessionManager(this)
@@ -47,10 +64,34 @@ class SessionResultsActivity : AppCompatActivity() {
         tvTitle.text = "Wyniki sesji #$sessionId"
         resultsContainer = findViewById(R.id.resultsContainer)
         tvEmptyResults = findViewById(R.id.tvEmptyResults)
+
+        tvCurrentSet = findViewById(R.id.tvCurrentSet)
+        tvCurrentRep = findViewById(R.id.tvCurrentRep)
+        updateProgressDisplay()
+
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSetMinus).setOnClickListener {
+            if (currentSet > 1) { currentSet--; updateProgressDisplay() }
+        }
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSetPlus).setOnClickListener {
+            currentSet++; updateProgressDisplay()
+        }
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnRepMinus).setOnClickListener {
+            if (currentRep > 1) { currentRep--; updateProgressDisplay() }
+        }
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnRepPlus).setOnClickListener {
+            currentRep++; updateProgressDisplay()
+        }
+
         fabAddResult = findViewById(R.id.fabAddResult)
         fabAddResult.setOnClickListener { showAddResultDialog() }
     }
 
+    private fun updateProgressDisplay() {
+        tvCurrentSet.text = currentSet.toString()
+        tvCurrentRep.text = currentRep.toString()
+    }
+
+    /** Odświeża listę wyników po powrocie na ekran (np. z dialogu edycji). */
     override fun onResume() {
         super.onResume()
         loadResults()
@@ -148,6 +189,9 @@ class SessionResultsActivity : AppCompatActivity() {
                 etWeightUsed.setText(existing.weightUsed?.toString().orEmpty())
                 etDuration.setText(existing.duration?.toString().orEmpty())
                 etNotes.setText(existing.notes.orEmpty())
+            } else {
+                etSetsDone.setText(currentSet.toString())
+                etRepsDone.setText(currentRep.toString())
             }
 
             val dialog = MaterialAlertDialogBuilder(this@SessionResultsActivity, R.style.ThemeOverlay_TrainIT_MaterialAlertDialog)
@@ -203,6 +247,10 @@ class SessionResultsActivity : AppCompatActivity() {
                             }
                         }.onSuccess {
                             dialog.dismiss()
+                            if (existing == null) {
+                                currentSet++
+                                updateProgressDisplay()
+                            }
                             loadResults()
                         }.onFailure {
                             Toast.makeText(

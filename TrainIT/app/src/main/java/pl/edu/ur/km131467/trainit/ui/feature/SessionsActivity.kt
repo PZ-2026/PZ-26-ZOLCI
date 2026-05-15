@@ -20,6 +20,11 @@ class SessionsActivity : BaseFeatureActivity() {
     /** WF-11: historia sesji z wyszukiwaniem po statusie / planie. */
     override val enableListSearch: Boolean = true
 
+    /**
+     * Ukrywa domyślną akcję główną modułu sesji (historia tylko do odczytu z listy).
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         findViewById<View>(R.id.btnPrimaryAction)?.visibility = View.GONE

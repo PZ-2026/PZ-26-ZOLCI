@@ -40,6 +40,11 @@ class TrainerClientResultsActivity : AppCompatActivity() {
     private lateinit var resultsContainer: LinearLayout
     private lateinit var tvEmpty: TextView
 
+    /**
+     * Odczytuje identyfikator klienta z intencji i uruchamia pobieranie wyników sesji.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sessionManager = SessionManager(this)
@@ -114,19 +119,20 @@ class TrainerClientResultsActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Renderuje nagłówek sesji, wiersze wyników ćwiczeń oraz separator wizualny.
+     */
     private fun renderSessionGroup(
         inflater: LayoutInflater,
         session: FeatureListItem,
         results: List<SessionExerciseResultDto>,
     ) {
-        // Session header
         val header = inflater.inflate(R.layout.item_feature_entry, resultsContainer, false)
         header.findViewById<TextView>(R.id.tvItemTitle).text = session.title
         header.findViewById<TextView>(R.id.tvItemSubtitle).text = session.subtitle
         header.setBackgroundResource(R.drawable.bg_card_dark_elevated)
         resultsContainer.addView(header)
 
-        // Result rows
         for (result in results) {
             val row = inflater.inflate(R.layout.item_feature_entry, resultsContainer, false)
             row.findViewById<TextView>(R.id.tvItemTitle).text = result.exerciseName
@@ -147,7 +153,6 @@ class TrainerClientResultsActivity : AppCompatActivity() {
             resultsContainer.addView(row)
         }
 
-        // Divider
         val divider = View(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,

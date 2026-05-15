@@ -17,7 +17,12 @@ import pl.edu.ur.km131467.trainit.R
 import pl.edu.ur.km131467.trainit.data.local.SessionManager
 import pl.edu.ur.km131467.trainit.data.repository.FeatureRepository
 
-/** Ekran formularza dodawania lub edycji planu treningowego. */
+/**
+ * Ekran formularza dodawania lub edycji planu treningowego.
+ *
+ * Obsługuje tryb tworzenia planu własnego, edycji istniejącego planu
+ * oraz tworzenia planu dla klienta (trener podaje [EXTRA_TARGET_USER_ID]).
+ */
 class AddWorkoutActivity : AppCompatActivity() {
     private lateinit var tvScreenTitle: TextView
     private lateinit var etWorkoutName: EditText
@@ -42,6 +47,11 @@ class AddWorkoutActivity : AppCompatActivity() {
             return if (id > 0) id else null
         }
 
+    /**
+     * Wiąże formularz; w trybie edycji wczytuje szczegóły planu z backendu.
+     *
+     * @param savedInstanceState zapisany stan instancji aktywności
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_workout)
