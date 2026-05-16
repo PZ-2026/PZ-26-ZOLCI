@@ -33,13 +33,13 @@ android {
         debug {
             val debugUrl = localProps.getProperty("PRODUCTION_BASE_URL")
                 ?: System.getenv("PRODUCTION_BASE_URL")
-                ?: "http://10.0.2.2:8080/"
+                ?: "http://146.59.17.123:8080/"
             buildConfigField("String", "BASE_URL", "\"$debugUrl\"")
         }
         release {
             val productionUrl = localProps.getProperty("PRODUCTION_BASE_URL")
                 ?: System.getenv("PRODUCTION_BASE_URL")
-                ?: "http://WSTAW_IP_SERWERA:8080/"
+                ?: "http://146.59.17.123:8080/"
             buildConfigField("String", "BASE_URL", "\"$productionUrl\"")
             isMinifyEnabled = false
             proguardFiles(
